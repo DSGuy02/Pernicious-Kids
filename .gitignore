@@ -1,0 +1,19 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Godot specific ignores
+.import/
+#export.cfg
+#export_presets.cfg
+
+# Mono-specific ignores
+.mono/
+.vs/
+
+# My custom files to ignore
+git_push.sh
+
+# My custom folders to ignore
+Builds/
+temp/
+build/
