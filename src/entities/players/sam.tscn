@@ -1,3 +1,10 @@
-[gd_scene format=3 uid="uid://besqrsjl35hw"]
+[gd_scene load_steps=3 format=3 uid="uid://dappxlaro5bhk"]
+
+[ext_resource type="Script" path="res://src/entities/players/Sam.cs" id="1_lsigi"]
+[ext_resource type="Texture2D" uid="uid://uuo4n6fdowmt" path="res://icon.svg" id="2_vpivk"]
 
 [node name="Sam" type="CharacterBody3D"]
+script = ExtResource("1_lsigi")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+texture = ExtResource("2_vpivk")
