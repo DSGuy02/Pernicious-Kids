@@ -25,6 +25,10 @@ public partial class Sam : CharacterBody3D
 	[Export] private NodePath CameraNodePath;
 	[Export] private NodePath NetworkTickRateNodePath;
 
+	// Custom signals
+	// [Signal] delegate void MySignal(); // Just for future references
+	// [Signal] delegate void MySignalWithArguments(string foo, int bar); // Just for future references
+	
 	// Godot variables
 	private bool multiplayerActive = false;
 	private float gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
@@ -47,12 +51,18 @@ public partial class Sam : CharacterBody3D
 		Private Methods
 	*/
 	private bool isMaster() // If the player is in single player, or controls the particular player in multiplayer
-	{	
-		if (!multiplayerActive || IsMultiplayerAuthority())
-			return true;
+	{
+		if (MultiplayerActive)
+		{
+			if (IsMultiplayerAuthority())
+				return true;
+			else
+				return false;
+		}
 		
 		return true;
 	}
+	
 	private Vector3 getInput()
 	{
 		Vector3 _inputDir = Vector3.Zero;
@@ -85,6 +95,20 @@ public partial class Sam : CharacterBody3D
 	}
 
 	/*
+		Signal Callbacks
+	*/
+	private void _onNetworkTickRateTimeout()
+	{
+		if (MultiplayerActive)
+			if (IsMultiplayerAuthority())
+				Rpc(nameof(puppetUpdateState), GlobalTransform.origin, Velocity, new Vector2(Head.Rotation.x, Rotation.y));
+			else
+				NetworkTickRate.Stop();
+		else
+			NetworkTickRate.Stop();
+	}
+
+	/*
 		GODOT Methods
 	*/
 	public override void _Ready()
@@ -98,6 +122,9 @@ public partial class Sam : CharacterBody3D
 		// Set the camera and model to the right player
 		Camera.Current = isMaster();
 		Model.Visible = isMaster();
+
+		// Connect Signals
+		NetworkTickRate.Timeout += () => _onNetworkTickRateTimeout();
 	}
 	
 	public override void _PhysicsProcess(double delta)

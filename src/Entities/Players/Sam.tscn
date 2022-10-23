@@ -27,3 +27,5 @@ mesh = SubResource("CapsuleMesh_cd0ku")
 shape = SubResource("CapsuleShape3D_kvtp0")
 
 [node name="NetworkTickRate" type="Timer" parent="."]
+wait_time = 0.03
+autostart = true
