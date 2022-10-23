@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://byr2fmoiy4xd0"]
+
+[ext_resource type="Script" path="res://src/Entities/Test/Test.cs" id="1_ymmjs"]
+[ext_resource type="Texture2D" uid="uid://uuo4n6fdowmt" path="res://icon.svg" id="2_6tqqe"]
+
+[node name="Test" type="Node2D"]
+script = ExtResource("1_ymmjs")
+
+[node name="Icon" type="Sprite2D" parent="."]
+texture = ExtResource("2_6tqqe")
