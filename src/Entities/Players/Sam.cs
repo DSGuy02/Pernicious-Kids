@@ -9,9 +9,9 @@ public partial class Sam : CharacterBody3D
 		Public
 	*/
 	// Properties
-	public bool MultiplayerActive {
-		get { return multiplayerActive; }
-		set { multiplayerActive = value; }
+	public bool multiplayerActive {
+		get { return _multiplayerActive; }
+		set { _multiplayerActive = value; }
 	}
 
 	/* 
@@ -30,29 +30,29 @@ public partial class Sam : CharacterBody3D
 	// [Signal] delegate void MySignalWithArguments(string foo, int bar); // Just for future references
 	
 	// Godot variables
-	private bool multiplayerActive = false;
-	private float gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
-	private int Speed = 5;
+	private bool _multiplayerActive = false;
+	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
+	private int _speed = 5;
 
-	private float MouseSensitivity = 0.08f;
+	private float _mouseSensitivity = 0.08f;
 	
-	private Vector3 PuppetPosition = Vector3.Zero;
-	private Vector3 PuppetVelocity = Vector3.Zero;
-	private Vector2 PuppetRotation = Vector2.Zero;
+	private Vector3 _puppetPosition = Vector3.Zero;
+	private Vector3 _puppetVelocity = Vector3.Zero;
+	private Vector2 _puppetRotation = Vector2.Zero;
 
 	// Node variables
-	private Node3D Head;
-	private Camera3D Camera;
-	private Node3D Model;
-	private Timer NetworkTickRate;
-	private Tween movementTween;
+	private Node3D _head;
+	private Camera3D _camera;
+	private Node3D _model;
+	private Timer _networkTickRate;
+	private Tween _movementTween;
 	
 	/*
 		Private Methods
 	*/
 	private bool isMaster() // If the player is in single player, or controls the particular player in multiplayer
 	{
-		if (MultiplayerActive)
+		if (_multiplayerActive)
 		{
 			if (IsMultiplayerAuthority())
 				return true;
@@ -87,11 +87,11 @@ public partial class Sam : CharacterBody3D
 	/*
 		Network Methods
 	*/
-	private void puppetUpdateState(Vector3 p_position, Vector3 p_velocity, Vector2 p_rotation)
+	private void puppetUpdateState(Vector3 pPosition, Vector3 pVelocity, Vector2 pRotation)
 	{
-		PuppetPosition = p_position;
-		PuppetVelocity = p_velocity;
-		PuppetRotation = p_rotation;
+		_puppetPosition = pPosition;
+		_puppetVelocity = pVelocity;
+		_puppetRotation = pRotation;
 	}
 
 	/*
@@ -99,13 +99,13 @@ public partial class Sam : CharacterBody3D
 	*/
 	private void _onNetworkTickRateTimeout()
 	{
-		if (MultiplayerActive)
+		if (_multiplayerActive)
 			if (IsMultiplayerAuthority())
-				Rpc(nameof(puppetUpdateState), GlobalTransform.origin, Velocity, new Vector2(Head.Rotation.x, Rotation.y));
+				Rpc(nameof(puppetUpdateState), GlobalTransform.origin, Velocity, new Vector2(_head.Rotation.x, Rotation.y));
 			else
-				NetworkTickRate.Stop();
+				_networkTickRate.Stop();
 		else
-			NetworkTickRate.Stop();
+			_networkTickRate.Stop();
 	}
 
 	/*
@@ -114,17 +114,17 @@ public partial class Sam : CharacterBody3D
 	public override void _Ready()
 	{
 		// Set the Nodes from the NodePaths
-		Head = (Node3D) GetNode(HeadNodePath) as Node3D;
-		Camera = (Camera3D) GetNode(CameraNodePath) as Camera3D;
-		NetworkTickRate = (Timer) GetNode(NetworkTickRateNodePath) as Timer;
-		Model = (Node3D) GetNode(ModelNodePath);
+		_head = (Node3D) GetNode(HeadNodePath) as Node3D;
+		_camera = (Camera3D) GetNode(CameraNodePath) as Camera3D;
+		_networkTickRate = (Timer) GetNode(NetworkTickRateNodePath) as Timer;
+		_model = (Node3D) GetNode(ModelNodePath);
 
 		// Set the camera and model to the right player
-		Camera.Current = isMaster();
-		Model.Visible = isMaster();
+		_camera.Current = isMaster();
+		_model.Visible = isMaster();
 
 		// Connect Signals
-		NetworkTickRate.Timeout += () => _onNetworkTickRateTimeout();
+		_networkTickRate.Timeout += () => _onNetworkTickRateTimeout();
 	}
 	
 	public override void _PhysicsProcess(double delta)
@@ -132,11 +132,11 @@ public partial class Sam : CharacterBody3D
 		Vector3 velocity = Velocity;
 
 		if (!IsOnFloor()) // Let's have gravity
-			velocity.y -= gravity * (float)delta;
+			velocity.y -= _gravity * (float)delta;
 		
 		if (isMaster()) // This is our character
 		{
-			Vector3 desired_velocity = getInput() * Speed;
+			Vector3 desired_velocity = getInput() * _speed;
 
 			velocity.x = desired_velocity.x;
 			velocity.z = desired_velocity.z;
@@ -144,13 +144,22 @@ public partial class Sam : CharacterBody3D
 			if (Input.IsActionPressed("jump") && IsOnFloor())
 				velocity.y += JUMPVELOCITY;
 		} else { // This is not our character
-			//GlobalTransform.origin = PuppetPosition;
 
-			velocity.x = PuppetVelocity.x;
-			velocity.z = PuppetVelocity.z;
+			var newGlobalTransform = GlobalTransform;
+			var newRotation = Rotation;
+			var newHeadRotation = _head.Rotation;
 
-			//Rotation.y = PuppetRotation.y;
-			//head.Rotation.x = PuppetRotation.x;
+			newGlobalTransform.origin = _puppetPosition;
+			newRotation.y = _puppetRotation.y;
+			newHeadRotation.x = _puppetRotation.x;
+
+			GlobalTransform = newGlobalTransform;
+
+			velocity.x = _puppetVelocity.x;
+			velocity.z = _puppetVelocity.z;
+
+			Rotation = newRotation;
+			_head.Rotation = newHeadRotation;
 		}
 
 		// Apply the whole physics
@@ -164,9 +173,12 @@ public partial class Sam : CharacterBody3D
 			if (inputEvent is InputEventMouseMotion)
 			{
 				InputEventMouseMotion _inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
-				RotateY(Mathf.DegToRad(-_inputEventMouseMotion.Relative.x * MouseSensitivity));
-				Head.RotateX(Mathf.DegToRad(-_inputEventMouseMotion.Relative.y * MouseSensitivity));
-				//Head.Rotate.x = Mathf.Clamp(Head.Rotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+				RotateY(Mathf.DegToRad(-_inputEventMouseMotion.Relative.x * _mouseSensitivity));
+				_head.RotateX(Mathf.DegToRad(-_inputEventMouseMotion.Relative.y * _mouseSensitivity));
+
+				var newHeadRotation = _head.Rotation;
+				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+				_head.Rotation = newHeadRotation;
 			}
 		}
 	}
