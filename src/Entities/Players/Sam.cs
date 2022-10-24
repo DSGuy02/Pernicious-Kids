@@ -16,7 +16,16 @@ public partial class Sam : CharacterBody3D
 
 	public Vector3 cameraPosition {
 		get { return _cameraPosition; }
-		set { _cameraPosition = value; }
+		set 
+		{ 
+			_cameraPosition = value;
+
+			if (_cameraTween != null)
+				_cameraTween.Kill();
+			
+			_cameraTween = CreateTween();
+			_cameraTween.TweenProperty(_head, "position", _cameraPosition, 0.5).SetTrans(Tween.TransitionType.Linear);
+		}
 	}
 
 	/* 
@@ -37,15 +46,17 @@ public partial class Sam : CharacterBody3D
 	// Godot variables
 	private bool _multiplayerActive = false;
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
+	private float _mouseSensitivity = 0.08f;
+
 	private int _speed = 5;
-	private Vector3 _cameraPosition = Vector3.Zero;
-	private Vector3[] _cameraPostions = {
+	private int _cameraPositionValue = 0;
+
+	private Vector3[] _cameraPositions = {
 		new Vector3(0, 0, 0),
 		new Vector3(0, 1.5f, 3),
 	};
+	private Vector3 _cameraPosition = Vector3.Zero;
 
-	private float _mouseSensitivity = 0.08f;
-	
 	// Puppet position for mulitplayer
 	private Vector3 _puppetPosition = Vector3.Zero;
 	private Vector3 _puppetVelocity = Vector3.Zero;
@@ -53,11 +64,12 @@ public partial class Sam : CharacterBody3D
 
 	// Node variables
 	private Node3D _head;
-	private Camera3D _camera;
 	private Node3D _model;
+	private Camera3D _camera;
 	private Timer _networkTickRate;
 	private Tween _movementTween;
-	
+	private Tween _cameraTween;
+
 	/*
 		Private Methods
 	*/
@@ -103,6 +115,13 @@ public partial class Sam : CharacterBody3D
 		_puppetPosition = pPosition;
 		_puppetVelocity = pVelocity;
 		_puppetRotation = pRotation;
+
+		// Tween the transformation (position and rotation i think) at 0.1 second, this should compensate for lag
+		if (_movementTween != null)
+			_movementTween.Kill();
+		
+		_movementTween = CreateTween();
+		_movementTween.TweenProperty(this, "global_transform", new Transform3D(GlobalTransform.basis, pPosition), 0.1).SetTrans(Tween.TransitionType.Linear);
 	}
 
 	/*
@@ -134,6 +153,9 @@ public partial class Sam : CharacterBody3D
 		_camera.Current = isMaster();
 		_model.Visible = isMaster();
 
+		// Set the camera position
+		cameraPosition = _cameraPositions[_cameraPositionValue];
+
 		// Connect Signals
 		_networkTickRate.Timeout += () => _onNetworkTickRateTimeout();
 	}
@@ -147,13 +169,14 @@ public partial class Sam : CharacterBody3D
 		
 		if (isMaster()) // This is our character
 		{
-			Vector3 desired_velocity = getInput() * _speed;
+			Vector3 desiredVelocity = getInput() * _speed;
 
-			velocity.x = desired_velocity.x;
-			velocity.z = desired_velocity.z;
+			velocity.x = desiredVelocity.x;
+			velocity.z = desiredVelocity.z;
 
 			if (Input.IsActionPressed("jump") && IsOnFloor())
 				velocity.y += JUMPVELOCITY;
+		
 		} else { // This is not our character
 
 			var newGlobalTransform = GlobalTransform;
@@ -181,15 +204,25 @@ public partial class Sam : CharacterBody3D
 	{
 		if (isMaster())
 		{
-			if (inputEvent is InputEventMouseMotion)
+			if (inputEvent is InputEventMouseMotion) // Camera movement
 			{
 				InputEventMouseMotion _inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
 				RotateY(Mathf.DegToRad(-_inputEventMouseMotion.Relative.x * _mouseSensitivity));
 				_head.RotateX(Mathf.DegToRad(-_inputEventMouseMotion.Relative.y * _mouseSensitivity));
 
+				// Don't let the camera move beyound a certain point
 				var newHeadRotation = _head.Rotation;
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 				_head.Rotation = newHeadRotation;
+			}
+
+			if (inputEvent.IsActionPressed("change_camera"))
+			{
+				if (_cameraPositionValue == 0)
+					_cameraPositionValue = 1;
+				else _cameraPositionValue = 0;
+
+				cameraPosition = _cameraPositions[_cameraPositionValue];
 			}
 		}
 	}
