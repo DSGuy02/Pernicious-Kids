@@ -151,7 +151,7 @@ public partial class Sam : CharacterBody3D
 
 		// Set the camera and model to the right player
 		_camera.Current = isMaster();
-		_model.Visible = isMaster();
+		// _model.Visible = !isMaster(); // TODO: should it be invisible to the player master?
 
 		// Set the camera position
 		cameraPosition = _cameraPositions[_cameraPositionValue];
