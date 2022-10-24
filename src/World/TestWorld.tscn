@@ -20,3 +20,7 @@ shape = SubResource("BoxShape3D_k7t7u")
 
 [node name="Sam" parent="." instance=ExtResource("1_ufwml")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79796, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.149553, 0.988754, 0, -0.988754, 0.149553, 0, 10.7933, 0)
+shadow_enabled = true
