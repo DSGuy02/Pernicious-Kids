@@ -14,6 +14,11 @@ public partial class Sam : CharacterBody3D
 		set { _multiplayerActive = value; }
 	}
 
+	public Vector3 cameraPosition {
+		get { return _cameraPosition; }
+		set { _cameraPosition = value; }
+	}
+
 	/* 
 		Private
 	*/
@@ -33,9 +38,15 @@ public partial class Sam : CharacterBody3D
 	private bool _multiplayerActive = false;
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
 	private int _speed = 5;
+	private Vector3 _cameraPosition = Vector3.Zero;
+	private Vector3[] _cameraPostions = {
+		new Vector3(0, 0, 0),
+		new Vector3(0, 1.5f, 3),
+	};
 
 	private float _mouseSensitivity = 0.08f;
 	
+	// Puppet position for mulitplayer
 	private Vector3 _puppetPosition = Vector3.Zero;
 	private Vector3 _puppetVelocity = Vector3.Zero;
 	private Vector2 _puppetRotation = Vector2.Zero;

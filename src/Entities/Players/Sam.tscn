@@ -4,7 +4,8 @@
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_cd0ku"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kvtp0"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_32wqs"]
+size = Vector3(1, 2, 1)
 
 [node name="Sam" type="CharacterBody3D"]
 script = ExtResource("1_nebiq")
@@ -14,7 +15,7 @@ CameraNodePath = NodePath("Head/Camera3D")
 NetworkTickRateNodePath = NodePath("NetworkTickRate")
 
 [node name="Head" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.483408, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 3)
 
 [node name="Camera3D" type="Camera3D" parent="Head"]
 
@@ -24,7 +25,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.483408, 0)
 mesh = SubResource("CapsuleMesh_cd0ku")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("CapsuleShape3D_kvtp0")
+shape = SubResource("BoxShape3D_32wqs")
 
 [node name="NetworkTickRate" type="Timer" parent="."]
 wait_time = 0.03
