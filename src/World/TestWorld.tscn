@@ -1,9 +1,19 @@
-[gd_scene load_steps=5 format=3 uid="uid://bxnwrt3qjh8ca"]
+[gd_scene load_steps=7 format=3 uid="uid://bxnwrt3qjh8ca"]
 
 [ext_resource type="PackedScene" uid="uid://b5pyxl4tim2mw" path="res://src/Entities/Players/Sam.tscn" id="1_ufwml"]
 
-[sub_resource type="Environment" id="Environment_cfw2a"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_iwskj"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_v7odj"]
+sky_material = SubResource("ProceduralSkyMaterial_iwskj")
+
+[sub_resource type="Environment" id="Environment_g8k33"]
 background_mode = 2
+sky = SubResource("Sky_v7odj")
+tonemap_mode = 2
+glow_enabled = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_u5bsr"]
 size = Vector3(50, 1, 50)
@@ -14,7 +24,7 @@ size = Vector3(50, 1, 50)
 [node name="TestWorld" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_cfw2a")
+environment = SubResource("Environment_g8k33")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 
@@ -26,7 +36,3 @@ shape = SubResource("BoxShape3D_k7t7u")
 
 [node name="Sam" parent="." instance=ExtResource("1_ufwml")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79796, 0)
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.149553, 0.988754, 0, -0.988754, 0.149553, 0, 10.7933, 0)
-shadow_enabled = true
