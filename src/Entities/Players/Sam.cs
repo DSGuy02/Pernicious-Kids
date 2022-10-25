@@ -9,12 +9,27 @@ public partial class Sam : CharacterBody3D
 		Public
 	*/
 	// Properties
-	public bool multiplayerActive {
+	public bool multiplayerActive
+	{
 		get { return _multiplayerActive; }
 		set { _multiplayerActive = value; }
 	}
 
-	public Vector3 cameraPosition {
+	public bool confineHideMouse
+	{
+		get { return _confineHideMouse; }
+		set
+		{
+			_confineHideMouse = value;
+			
+			if (_confineHideMouse)
+				Input.MouseMode = Input.MouseModeEnum.ConfinedHidden;
+			else
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+		}
+	}
+	public Vector3 cameraPosition
+	{
 		get { return _cameraPosition; }
 		set 
 		{ 
@@ -45,6 +60,7 @@ public partial class Sam : CharacterBody3D
 	
 	// Godot variables
 	private bool _multiplayerActive = false;
+	private bool _confineHideMouse = false;
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
 	private float _mouseSensitivity = 0.08f;
 
@@ -206,14 +222,22 @@ public partial class Sam : CharacterBody3D
 		{
 			if (inputEvent is InputEventMouseMotion) // Camera movement
 			{
-				InputEventMouseMotion _inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
-				RotateY(Mathf.DegToRad(-_inputEventMouseMotion.Relative.x * _mouseSensitivity));
-				_head.RotateX(Mathf.DegToRad(-_inputEventMouseMotion.Relative.y * _mouseSensitivity));
+				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
+				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity));
+				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity));
 
 				// Don't let the camera move beyound a certain point
 				var newHeadRotation = _head.Rotation;
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 				_head.Rotation = newHeadRotation;
+			} else if (inputEvent is InputEventKey)
+			{
+				InputEventKey inputEventKey = (InputEventKey) inputEvent;
+
+				if (inputEventKey.IsActionPressed("toggle_mouse")) // TOggle having the mouse confined or visible
+				{
+					confineHideMouse = !confineHideMouse;
+				}
 			}
 
 			if (inputEvent.IsActionPressed("change_camera"))
