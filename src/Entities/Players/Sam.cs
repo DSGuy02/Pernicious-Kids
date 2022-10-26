@@ -14,7 +14,6 @@ public partial class Sam : CharacterBody3D
 		get { return _multiplayerActive; }
 		set { _multiplayerActive = value; }
 	}
-
 	public bool confineHideMouse
 	{
 		get { return _confineHideMouse; }
@@ -28,6 +27,8 @@ public partial class Sam : CharacterBody3D
 				Input.MouseMode = Input.MouseModeEnum.Visible;
 		}
 	}
+
+
 	public Vector3 cameraPosition
 	{
 		get { return _cameraPosition; }
@@ -48,6 +49,7 @@ public partial class Sam : CharacterBody3D
 	*/
 	// Constants
 	private readonly int JUMPVELOCITY = 2;
+	
 	// Export variables
 	[Export] private NodePath HeadNodePath;
 	[Export] private NodePath ModelNodePath;
@@ -63,7 +65,9 @@ public partial class Sam : CharacterBody3D
 	private bool _confineHideMouse = false;
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
 	private float _mouseSensitivity = 0.08f;
+	private float _stamina = 100f;
 
+	private int _healthPoint = 100;
 	private int _speed = 5;
 	private int _cameraPositionValue = 0;
 
@@ -105,22 +109,54 @@ public partial class Sam : CharacterBody3D
 	private Vector3 getInput()
 	{
 		Vector3 _inputDir = Vector3.Zero;
+		
+		_inputDir += Input.GetAxis("forward", "backward") * GlobalTransform.basis.z; // Up and Down Movement
+		_inputDir += Input.GetAxis("leftward", "rightward") * GlobalTransform.basis.x; // Left and Right Movement
 
-		// Up and Down Movement
-		if (Input.IsActionPressed("forward"))
-			_inputDir += -GlobalTransform.basis.z;
-		if (Input.IsActionPressed("backward"))
-			_inputDir += GlobalTransform.basis.z;
-		
-		// Left and Right Movement
-		if (Input.IsActionPressed("leftward"))
-			_inputDir += -GlobalTransform.basis.x;
-		if (Input.IsActionPressed("rightward"))
-			_inputDir += GlobalTransform.basis.x;
-		
 		_inputDir = _inputDir.Normalized();
 
 		return _inputDir;
+	}
+
+	private void handleMovement(double delta)
+	{
+		Vector3 velocity = Velocity;
+
+		if (!IsOnFloor()) // Let's have gravity
+			velocity.y -= _gravity * (float)delta;
+		
+		if (isMaster()) // This is our character
+		{
+			Vector3 desiredVelocity = getInput() * _speed;
+
+			velocity.x = desiredVelocity.x;
+			velocity.z = desiredVelocity.z;
+
+			if (Input.IsActionPressed("jump") && IsOnFloor())
+				velocity.y += JUMPVELOCITY;
+		
+		} else { // This is not our character
+
+			var newGlobalTransform = GlobalTransform;
+			var newRotation = Rotation;
+			var newHeadRotation = _head.Rotation;
+
+			newGlobalTransform.origin = _puppetPosition;
+			newRotation.y = _puppetRotation.y;
+			newHeadRotation.x = _puppetRotation.x;
+
+			GlobalTransform = newGlobalTransform;
+
+			velocity.x = _puppetVelocity.x;
+			velocity.z = _puppetVelocity.z;
+
+			Rotation = newRotation;
+			_head.Rotation = newHeadRotation;
+		}
+
+		// Apply the whole physics
+		Velocity = velocity;
+		MoveAndSlide();
 	}
 
 	/*
@@ -178,58 +214,55 @@ public partial class Sam : CharacterBody3D
 	
 	public override void _PhysicsProcess(double delta)
 	{
-		Vector3 velocity = Velocity;
-
-		if (!IsOnFloor()) // Let's have gravity
-			velocity.y -= _gravity * (float)delta;
-		
-		if (isMaster()) // This is our character
-		{
-			Vector3 desiredVelocity = getInput() * _speed;
-
-			velocity.x = desiredVelocity.x;
-			velocity.z = desiredVelocity.z;
-
-			if (Input.IsActionPressed("jump") && IsOnFloor())
-				velocity.y += JUMPVELOCITY;
-		
-		} else { // This is not our character
-
-			var newGlobalTransform = GlobalTransform;
-			var newRotation = Rotation;
-			var newHeadRotation = _head.Rotation;
-
-			newGlobalTransform.origin = _puppetPosition;
-			newRotation.y = _puppetRotation.y;
-			newHeadRotation.x = _puppetRotation.x;
-
-			GlobalTransform = newGlobalTransform;
-
-			velocity.x = _puppetVelocity.x;
-			velocity.z = _puppetVelocity.z;
-
-			Rotation = newRotation;
-			_head.Rotation = newHeadRotation;
-		}
-
-		// Apply the whole physics
-		Velocity = velocity;
-		MoveAndSlide();
+		handleMovement(delta);
 	}
+
 	public override void _Input(InputEvent inputEvent)
 	{
 		if (isMaster())
 		{
 			if (inputEvent is InputEventMouseMotion) // Camera movement
 			{
+				// Move the camera based on the mouse movement
 				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
 				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity));
 				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity));
 
-				// Don't let the camera move beyound a certain point
+				// Don't let the camera move beyound a certain point in the X axis
 				var newHeadRotation = _head.Rotation;
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 				_head.Rotation = newHeadRotation;
+			
+			} else if (inputEvent is InputEventJoypadMotion) // Camera movement for controllers
+			{
+				InputEventJoypadMotion inputEventJoypadMotion = (InputEventJoypadMotion) inputEvent;
+
+				if (inputEventJoypadMotion.Axis == JoyAxis.RightX)
+				{
+					//GD.Print("Joypad Axis: " + inputEventJoypadMotion.Axis);
+					//GD.Print("Joypad Axis Value: " + inputEventJoypadMotion.AxisValue);
+
+					Vector3 newRotationY = new Vector3();
+					newRotationY.y += -inputEventJoypadMotion.AxisValue * _mouseSensitivity;
+					Rotation += newRotationY;
+
+					GD.Print("Rotation" + Rotation.ToString());
+				
+				} else if (inputEventJoypadMotion.Axis == JoyAxis.RightY)
+				{
+					//GD.Print("Joypad Axis: " + inputEventJoypadMotion.Axis);
+					//GD.Print("Joypad Axis Value: " + inputEventJoypadMotion.AxisValue);
+
+					Vector3 newHeadRotationX = new Vector3();
+					newHeadRotationX.x += -inputEventJoypadMotion.AxisValue * _mouseSensitivity;
+					_head.Rotation += newHeadRotationX;
+					
+					// Don't let the camera move beyound a certain point in the X axis
+					var newHeadRotation = _head.Rotation;
+					newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+					_head.Rotation = newHeadRotation;
+				}
+
 			} else if (inputEvent is InputEventKey)
 			{
 				InputEventKey inputEventKey = (InputEventKey) inputEvent;
