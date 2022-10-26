@@ -108,14 +108,36 @@ public partial class Sam : CharacterBody3D
 	
 	private Vector3 getInput()
 	{
-		Vector3 _inputDir = Vector3.Zero;
+		Vector3 inputDir = Vector3.Zero;
 		
-		_inputDir += Input.GetAxis("forward", "backward") * GlobalTransform.basis.z; // Up and Down Movement
-		_inputDir += Input.GetAxis("leftward", "rightward") * GlobalTransform.basis.x; // Left and Right Movement
+		inputDir += Input.GetAxis("forward", "backward") * GlobalTransform.basis.z; // Up and Down Movement
+		inputDir += Input.GetAxis("leftward", "rightward") * GlobalTransform.basis.x; // Left and Right Movement
 
-		_inputDir = _inputDir.Normalized();
+		inputDir = inputDir.Normalized();
+		
+		return inputDir;
+	}
 
-		return _inputDir;
+	private void handleControllerCamera()
+	{
+		// Create the local variables
+		Vector3 controllerDir = Vector3.Zero;
+		Vector3 newRotationY = Vector3.Zero;
+		Vector3 newHeadRotationX = Vector3.Zero;
+
+		// Collect the controller input and multiply it with the mouse sensitivity
+		controllerDir.y += Input.GetAxis("camera_left", "camera_right") * _mouseSensitivity;
+		controllerDir.x += Input.GetAxis("camera_up", "camera_down") * _mouseSensitivity;
+
+		controllerDir = controllerDir.Normalized(); // Normalise it to make it move faster and equally across 2 axis
+
+		// Set the new rotation, we have to convert it to radians (as Rotation is based on radians) and negate it as it would be flipped
+		newRotationY.y += Mathf.DegToRad(-controllerDir.y);
+		newHeadRotationX.x += Mathf.DegToRad(-controllerDir.x);
+
+		// Apply the new values
+		Rotation += newRotationY;
+		_head.Rotation += newHeadRotationX;
 	}
 
 	private void handleMovement(double delta)
@@ -127,6 +149,8 @@ public partial class Sam : CharacterBody3D
 		
 		if (isMaster()) // This is our character
 		{
+			handleControllerCamera();
+
 			Vector3 desiredVelocity = getInput() * _speed;
 
 			velocity.x = desiredVelocity.x;
@@ -233,36 +257,6 @@ public partial class Sam : CharacterBody3D
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 				_head.Rotation = newHeadRotation;
 			
-			} else if (inputEvent is InputEventJoypadMotion) // Camera movement for controllers
-			{
-				InputEventJoypadMotion inputEventJoypadMotion = (InputEventJoypadMotion) inputEvent;
-
-				if (inputEventJoypadMotion.Axis == JoyAxis.RightX)
-				{
-					//GD.Print("Joypad Axis: " + inputEventJoypadMotion.Axis);
-					//GD.Print("Joypad Axis Value: " + inputEventJoypadMotion.AxisValue);
-
-					Vector3 newRotationY = new Vector3();
-					newRotationY.y += -inputEventJoypadMotion.AxisValue * _mouseSensitivity;
-					Rotation += newRotationY;
-
-					GD.Print("Rotation" + Rotation.ToString());
-				
-				} else if (inputEventJoypadMotion.Axis == JoyAxis.RightY)
-				{
-					//GD.Print("Joypad Axis: " + inputEventJoypadMotion.Axis);
-					//GD.Print("Joypad Axis Value: " + inputEventJoypadMotion.AxisValue);
-
-					Vector3 newHeadRotationX = new Vector3();
-					newHeadRotationX.x += -inputEventJoypadMotion.AxisValue * _mouseSensitivity;
-					_head.Rotation += newHeadRotationX;
-					
-					// Don't let the camera move beyound a certain point in the X axis
-					var newHeadRotation = _head.Rotation;
-					newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
-					_head.Rotation = newHeadRotation;
-				}
-
 			} else if (inputEvent is InputEventKey)
 			{
 				InputEventKey inputEventKey = (InputEventKey) inputEvent;
