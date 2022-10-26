@@ -49,7 +49,13 @@ public partial class Sam : CharacterBody3D
 	*/
 	// Constants
 	private readonly int JUMPVELOCITY = 2;
-	
+	private readonly int MAXSPEED = 10;
+	private readonly int MINSPEED = 5;
+	private readonly int MAXSTAMINA = 100;
+
+	private readonly float SPEEDWEIGHT = 0.1f;
+	private readonly float STAMINAWEIGHT = 0.02f;
+
 	// Export variables
 	[Export] private NodePath HeadNodePath;
 	[Export] private NodePath ModelNodePath;
@@ -67,9 +73,10 @@ public partial class Sam : CharacterBody3D
 	private float _mouseSensitivity = 0.08f;
 	private float _controllerSensitivity = 1.0f;
 	private float _stamina = 100f;
+	private float _speed = 5.0f;
 
 	private int _healthPoint = 100;
-	private int _speed = 5;
+	
 	private int _cameraPositionValue = 0;
 
 	private Vector3[] _cameraPositions = {
@@ -149,6 +156,7 @@ public partial class Sam : CharacterBody3D
 	private void handleMovement(double delta)
 	{
 		Vector3 velocity = Velocity;
+		bool sprint = Input.IsActionPressed("sprint");
 
 		if (!IsOnFloor()) // Let's have gravity
 			velocity.y -= _gravity * (float)delta;
@@ -156,6 +164,24 @@ public partial class Sam : CharacterBody3D
 		if (isMaster()) // This is our character
 		{
 			handleControllerCamera();
+
+			if (sprint) // Make the player run and consume their energy
+			{
+				if (_stamina > 1)
+				{
+					_speed = Mathf.Lerp(_speed, MAXSPEED, SPEEDWEIGHT);
+					_stamina = Mathf.Lerp(_stamina, 0, STAMINAWEIGHT);
+				} else { // Revert only the player's speed
+					_speed = Mathf.Lerp(_speed, MINSPEED, SPEEDWEIGHT * 2);
+				}
+			
+			} else { // Revert the player's speed and slowly restore their energy
+				_speed = Mathf.Lerp(_speed, MINSPEED, SPEEDWEIGHT * 2);
+				_stamina = Mathf.Lerp(_stamina, MAXSTAMINA, STAMINAWEIGHT / 2);
+			}
+
+			GD.Print("Speed: " + _speed);
+			GD.Print("Stamina: " + _stamina);
 
 			Vector3 desiredVelocity = getInput() * _speed;
 
@@ -257,7 +283,7 @@ public partial class Sam : CharacterBody3D
 				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
 				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity)); // Rotate along the mouse-X
 				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity)); // Rotate along the mouse-Y
-				
+
 				// Don't let the camera move beyound a certain point in the X axis
 				var newHeadRotation = _head.Rotation;
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
