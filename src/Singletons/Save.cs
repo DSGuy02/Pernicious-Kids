@@ -10,7 +10,6 @@ public partial class Save : Node
 	public Dictionary<string, Variant> saveData
 	{
 		get { return _saveData; }
-		set { _saveData = value; }
 	}
 
 	// Private variables
@@ -78,7 +77,7 @@ public partial class Save : Node
 	/*
 		Public methods
 	*/
-	public void saveGame()
+	public void saveValue(string save_data_key, Variant save_data_value)
 	{
 		// TODO: Implement saving
 	}
