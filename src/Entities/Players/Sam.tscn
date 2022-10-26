@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://b5pyxl4tim2mw"]
+[gd_scene load_steps=6 format=3 uid="uid://b5pyxl4tim2mw"]
 
 [ext_resource type="Script" path="res://src/Entities/Players/Sam.cs" id="1_nebiq"]
 
@@ -7,6 +7,10 @@ albedo_color = Color(0, 0.254902, 1, 1)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_cd0ku"]
 material = SubResource("StandardMaterial3D_cc1nb")
+
+[sub_resource type="SphereMesh" id="SphereMesh_srmew"]
+radius = 0.2
+height = 0.4
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_32wqs"]
 size = Vector3(1, 2, 1)
@@ -27,6 +31,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 3)
 
 [node name="CSGMesh3D" type="CSGMesh3D" parent="."]
 mesh = SubResource("CapsuleMesh_cd0ku")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="CSGMesh3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4266, -0.648223)
+mesh = SubResource("SphereMesh_srmew")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_32wqs")

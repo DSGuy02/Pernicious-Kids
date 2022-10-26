@@ -65,6 +65,7 @@ public partial class Sam : CharacterBody3D
 	private bool _confineHideMouse = false;
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
 	private float _mouseSensitivity = 0.08f;
+	private float _controllerSensitivity = 1.0f;
 	private float _stamina = 100f;
 
 	private int _healthPoint = 100;
@@ -122,22 +123,27 @@ public partial class Sam : CharacterBody3D
 	{
 		// Create the local variables
 		Vector3 controllerDir = Vector3.Zero;
-		Vector3 newRotationY = Vector3.Zero;
-		Vector3 newHeadRotationX = Vector3.Zero;
+		Vector3 newRotation = Vector3.Zero;
+		Vector3 newHeadRotation = Vector3.Zero;
 
 		// Collect the controller input and multiply it with the mouse sensitivity
-		controllerDir.y += Input.GetAxis("camera_left", "camera_right") * _mouseSensitivity;
-		controllerDir.x += Input.GetAxis("camera_up", "camera_down") * _mouseSensitivity;
+		controllerDir.y += Input.GetAxis("camera_left", "camera_right");
+		controllerDir.x += Input.GetAxis("camera_up", "camera_down");
 
 		controllerDir = controllerDir.Normalized(); // Normalise it to make it move faster and equally across 2 axis
 
-		// Set the new rotation, we have to convert it to radians (as Rotation is based on radians) and negate it as it would be flipped
-		newRotationY.y += Mathf.DegToRad(-controllerDir.y);
-		newHeadRotationX.x += Mathf.DegToRad(-controllerDir.x);
+		// Set the new rotation, we have to convert it to radians (as Rotation is based on radians) and negate it as it would be flipped, then we multiply it by the controller sensitivity
+		newRotation.y += Mathf.DegToRad(-controllerDir.y * _controllerSensitivity);
+		newHeadRotation.x += Mathf.DegToRad(-controllerDir.x * _controllerSensitivity);
 
 		// Apply the new values
-		Rotation += newRotationY;
-		_head.Rotation += newHeadRotationX;
+		Rotation += newRotation;
+		_head.Rotation += newHeadRotation;
+
+		// Don't allow the rotation to go upside down
+		var clampHeadRotation = _head.Rotation;
+		clampHeadRotation.x = Mathf.Clamp(clampHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+		_head.Rotation = clampHeadRotation;
 	}
 
 	private void handleMovement(double delta)
@@ -249,8 +255,9 @@ public partial class Sam : CharacterBody3D
 			{
 				// Move the camera based on the mouse movement
 				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
-				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity));
-				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity));
+				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity)); // Rotate along the mouse-X
+				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity)); // Rotate along the mouse-Y
+				_model.RotateY(Rotation.y); // Rotate the model to face the camera
 
 				// Don't let the camera move beyound a certain point in the X axis
 				var newHeadRotation = _head.Rotation;
