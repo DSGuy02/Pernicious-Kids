@@ -47,18 +47,21 @@ public partial class Save : Node
 
 	// Other
 	private Dictionary<string, Variant> _saveData;
-	private RandomNumberGenerator _randomNumberGenerator = new RandomNumberGenerator();
+	private RandomNumberGenerator _randomNumberGenerator;
 	/*
 		Private methods
 	*/
 	private Dictionary<string, Variant> getData()
 	{
+		_randomNumberGenerator = new RandomNumberGenerator();
 		_randomNumberGenerator.Randomize();
 		_saveData = new Dictionary<string, Variant>()
 		{
 			{ "Username", 
 				RANDOMUSERNAME[0,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(0))]
 				+ RANDOMUSERNAME[1,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(1))] },
+			{ "MouseSensitivity", 0.08f },
+			{ "ControllerSensitivity", 1.0f },
 			{ "TargetFramerate", 0 },
 			{ "ShowFramerate", false },
 			{ "UseUPNP", false },
