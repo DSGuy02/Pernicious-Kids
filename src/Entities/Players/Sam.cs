@@ -257,8 +257,7 @@ public partial class Sam : CharacterBody3D
 				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
 				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity)); // Rotate along the mouse-X
 				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity)); // Rotate along the mouse-Y
-				_model.RotateY(Rotation.y); // Rotate the model to face the camera
-
+				
 				// Don't let the camera move beyound a certain point in the X axis
 				var newHeadRotation = _head.Rotation;
 				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
