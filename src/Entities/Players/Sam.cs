@@ -180,8 +180,8 @@ public partial class Sam : CharacterBody3D
 				_stamina = Mathf.Lerp(_stamina, MAXSTAMINA, STAMINAWEIGHT / 2);
 			}
 
-			GD.Print("Speed: " + _speed);
-			GD.Print("Stamina: " + _stamina);
+			//GD.Print("Speed: " + _speed);
+			//GD.Print("Stamina: " + _stamina);
 
 			Vector3 desiredVelocity = getInput() * _speed;
 
