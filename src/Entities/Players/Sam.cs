@@ -9,12 +9,12 @@ public partial class Sam : CharacterBody3D
 		Public
 	*/
 	// Properties
-	public bool multiplayerActive
+	public bool MultiplayerActive
 	{
 		get { return _multiplayerActive; }
 		set { _multiplayerActive = value; }
 	}
-	public bool confineHideMouse
+	public bool ConfineHideMouse
 	{
 		get { return _confineHideMouse; }
 		set
@@ -29,7 +29,7 @@ public partial class Sam : CharacterBody3D
 	}
 
 
-	public Vector3 cameraPosition
+	public Vector3 CameraPosition
 	{
 		get { return _cameraPosition; }
 		set 
@@ -262,7 +262,7 @@ public partial class Sam : CharacterBody3D
 		// _model.Visible = !isMaster(); // TODO: should it be invisible to the player master?
 
 		// Set the camera position
-		cameraPosition = _cameraPositions[_cameraPositionValue];
+		CameraPosition = _cameraPositions[_cameraPositionValue];
 
 		// Connect Signals
 		_networkTickRate.Timeout += () => _onNetworkTickRateTimeout();
@@ -295,7 +295,7 @@ public partial class Sam : CharacterBody3D
 
 				if (inputEventKey.IsActionPressed("toggle_mouse")) // TOggle having the mouse confined or visible
 				{
-					confineHideMouse = !confineHideMouse;
+					ConfineHideMouse = !ConfineHideMouse;
 				}
 			}
 
@@ -305,7 +305,7 @@ public partial class Sam : CharacterBody3D
 					_cameraPositionValue = 1;
 				else _cameraPositionValue = 0;
 
-				cameraPosition = _cameraPositions[_cameraPositionValue];
+				CameraPosition = _cameraPositions[_cameraPositionValue];
 			}
 		}
 	}
