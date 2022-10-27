@@ -7,11 +7,11 @@ using System;
 public partial class Multiplayer : Node
 {
 	// Signals
-	[Signal] public delegate void PlayersUpdated(Dictionary<string, Variant> playerList);
-	[Signal] public delegate void PlayerJoinedScene(int _playerId);
-	[Signal] public delegate void UPNPCompleted(Error error);
-	[Signal] public delegate void ServerCreationFailed(Error error);
-	[Signal] public delegate void NetworkConnectionFailed(Error error);
+	[Signal] public delegate void PlayersUpdatedEventHandler(Dictionary<string, Variant> playerList);
+	[Signal] public delegate void PlayerJoinedSceneEventHandler(int _playerId);
+	[Signal] public delegate void UPNPCompletedEventHandler(Error error);
+	[Signal] public delegate void ServerCreationFailedEventHandler(Error error);
+	[Signal] public delegate void NetworkConnectionFailedEventHandler(Error error);
 	
 	// Properties
 	public int CustomClientPort
@@ -62,7 +62,7 @@ public partial class Multiplayer : Node
 		set { _serverRegion = value; }
 	}
 
-	public MultiplayerAPI MultiplayerApi
+	public MultiplayerAPI API
 	{
 		get { return _multiplayerApi; }
 	}
@@ -146,10 +146,12 @@ public partial class Multiplayer : Node
 	/*
 		Public methods
 	*/
+
+	// Multiplayer Creation
 	public Error CreateServer()
 	{
 		Error error;
-		Save save = new Save();
+		Save save = (Save) GetNode<Save>("/root/Save");
 		
 		var saveServerPort = (int) save.SaveData["ServerPort"];
 		
@@ -167,12 +169,36 @@ public partial class Multiplayer : Node
 
 		GD.Print("Created server on port: " + port);
 		
+		API.MultiplayerPeer = _server;
+
+		GetTree().SetMultiplayer(API);
+
 		return error;
 	}
 
 	public Error JoinServer(string serverIP, int serverPort = 24800)
 	{
-		return Error.Ok;
+		Error error;
+		Save save = (Save) GetNode<Save>("/root/Save");
+
+		IpAddress = serverIP;
+
+		int customClientPort = serverPort;
+		int port = (customClientPort > 2000) ? customClientPort : DEFAULTPORT;
+
+		_client = new ENetMultiplayerPeer();
+		error = _client.CreateClient(IpAddress, port, INBANDWIDTH, OUTBANDWIDTH);
+
+		if (error != Error.Ok)
+		{
+			GD.PrintErr("Failed to initialise client connection! Error code: " + error);
+			return error;
+		}
+
+		API.MultiplayerPeer = _client;
+		GetTree().SetMultiplayer(API);
+
+		return error;
 	}
 
 	/*
