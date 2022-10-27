@@ -166,12 +166,14 @@ public partial class Multiplayer : Node
 			GD.PrintErr("Server Creation failed! Error code: " + error);
 			return error;
 		}
-
-		GD.Print("Created server on port: " + port);
 		
-		API.MultiplayerPeer = _server;
+		// _multiplayerPeer = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
+		//API.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
+		//GetTree().SetMultiplayer(API); // Can't do this yet
 
-		GetTree().SetMultiplayer(API);
+		GetTree().GetMultiplayer().MultiplayerPeer = _server; // Screw it, I'll just use the SceneTree's default multiplayer
+		
+		GD.Print("Created server on port: " + port);
 
 		return error;
 	}
@@ -195,8 +197,13 @@ public partial class Multiplayer : Node
 			return error;
 		}
 
-		API.MultiplayerPeer = _client;
-		GetTree().SetMultiplayer(API);
+		// _multiplayerPeer = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
+		//API.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
+		//GetTree().SetMultiplayer(API); // Can't do this yet
+
+		GetTree().GetMultiplayer().MultiplayerPeer = _client; // Screw it, I'll just use the SceneTree's default multiplayer
+
+		GD.Print("Connected to server!");
 
 		return error;
 	}

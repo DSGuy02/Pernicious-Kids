@@ -13,15 +13,14 @@ public partial class NetworkSetup : Control
 	*/
 	private void _onCreateServerPressed()
 	{
-		GD.Print("Create Server!");
-
 		Multiplayer multiplayer = (Multiplayer) GetNode<Multiplayer>("/root/Multiplayer");
 		var error = multiplayer.CreateServer();
 	}
 
 	private void _onJoinServerPressed()
 	{
-		GD.Print("Join Server!");
+		Multiplayer multiplayer = (Multiplayer) GetNode<Multiplayer>("/root/Multiplayer");
+		var error = multiplayer.JoinServer(multiplayer.IpAddress);
 	}
 
 	/*
