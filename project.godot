@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Save="*res://src/Singletons/Save.cs"
+Multiplayer="*res://src/Singletons/Multiplayer.cs"
 Global="*res://src/Singletons/Global.cs"
 
 [dotnet]
