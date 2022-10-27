@@ -11,14 +11,15 @@ config_version=5
 [application]
 
 config/name="Pernicious Kids"
+run/main_scene="res://src/World/NetworkSetup.tscn"
 config/features=PackedStringArray("4.0", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Save="*res://src/Singletons/Save.cs"
-Multiplayer="*res://src/Singletons/Multiplayer.cs"
-Global="*res://src/Singletons/Global.cs"
+Save="res://src/Singletons/Save.cs"
+Multiplayer="res://src/Singletons/Multiplayer.cs"
+Global="res://src/Singletons/Global.cs"
 
 [dotnet]
 
