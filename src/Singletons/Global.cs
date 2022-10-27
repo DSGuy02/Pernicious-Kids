@@ -6,39 +6,39 @@ using System;
 public partial class Global : Node
 {
 	// Properties
-	public static Vector2 gameDimensions
+	public Vector2 gameDimensions
 	{
 		get { return _gameDimensions; }
 	}
 
-	public static bool viewUsername
+	public bool viewUsername
 	{
 		get { return _viewUsername; }
 		set { viewUsername = value; }
 	}
 
-	public static bool viewFramerate
+	public bool viewFramerate
 	{
 		get { return _viewFramerate; }
 		set { _viewFramerate = value; }
 	}
 
 	// Private variables
-	private static Vector2 _gameDimensions;
-	private static bool _viewUsername = true;
-	private static bool _viewFramerate = false;
+	private Vector2 _gameDimensions;
+	private bool _viewUsername = true;
+	private bool _viewFramerate = false;
 
 	/*
 		Public Methods
 	*/
 
 	// Setter and Getter for audio volumes
-	public static void SetAudioBusVolumeDb(String audioBus, float audioVolumeDb)
+	public void SetAudioBusVolumeDb(String audioBus, float audioVolumeDb)
 	{
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex(audioBus), audioVolumeDb);
 	}
 
-	public static float GetAudioBusVolumeDb(String audioBus)
+	public float GetAudioBusVolumeDb(String audioBus)
 	{
 		return AudioServer.GetBusVolumeDb(AudioServer.GetBusIndex(audioBus));
 	}

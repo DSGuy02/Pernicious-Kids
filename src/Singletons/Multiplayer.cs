@@ -14,72 +14,72 @@ public partial class Multiplayer : Node
 	[Signal] public delegate void NetworkConnectionFailed(Error error);
 	
 	// Properties
-	public static int CustomClientPort
+	public int CustomClientPort
 	{
 		get { return _customClientPort; }
 		set { _customClientPort = value; }
 	}
-	public static int PlayerId
+	public int PlayerId
 	{
 		get { return _playerId; }
 		set { _playerId = value; }
 	}
 	
-	public static bool DedicatedServer
+	public bool DedicatedServer
 	{
 		get { return _dedicatedServer; }
 		set { _dedicatedServer = value; }
 	}
-	public static bool PrivateServer
+	public bool PrivateServer
 	{
 		get { return _privateServer; }
 		set { _privateServer = value; }
 	}
-	public static bool InGame
+	public bool InGame
 	{
 		get { return _inGame; }
 		set { _inGame = value; }
 	}
 
-	public static string ServerDisconnectedPrompt
+	public string ServerDisconnectedPrompt
 	{
 		get { return _serverDisconnectedPrompt; }
 		set { _serverDisconnectedPrompt = value; }
 	}
-	public static string IpAddress
+	public string IpAddress
 	{
 		get { return _ipAddress; }
 		set { _ipAddress = value; }
 	}
-	public static string PublicIpAddress
+	public string PublicIpAddress
 	{
 		get { return _publicIpAddress; }
 		set { _publicIpAddress = value; }
 	}
-	public static string ServerRegion
+	public string ServerRegion
 	{
 		get { return _serverRegion; }
 		set { _serverRegion = value; }
 	}
 
-	public static MultiplayerAPI MultiplayerApi
+	public MultiplayerAPI MultiplayerApi
 	{
 		get { return _multiplayerApi; }
 	}
 
-	public static Dictionary<string, Variant> Players
+	public Dictionary<string, Variant> Players
 	{
 		get { return _players; }
 	}
 
 	// Private variables
 	// Constants
-	private static readonly int DEFAULTPORT = 24800;
-	private static readonly int MAXCLIENTS = 5;
-	private static readonly int INBANDWIDTH = 20000;
-	private static readonly int OUTBANDWIDTH = 20000;
+	private readonly int DEFAULTPORT = 24800;
+	private readonly int MAXCLIENTS = 5;
+	private readonly int INBANDWIDTH = 20000;
+	private readonly int OUTBANDWIDTH = 20000;
 
-	private static readonly string[] SERVERREGIONS = new string[] {
+	private readonly string[] SERVERREGIONS = new string[] {
 		"NA",
 		"SA",
 		"EUR",
@@ -88,32 +88,32 @@ public partial class Multiplayer : Node
 		"OCN",
 	};
 
-	private static readonly string GAMEVERSION = "v0.1";
-	private static readonly string GAMEVERSIONRSTRIP = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
+	private readonly string GAMEVERSION = "v0.1";
+	private readonly string GAMEVERSIONRSTRIP = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
 
 	// Variables with properties
-	private static int _customClientPort;
-	private static int _playerId;
+	private int _customClientPort;
+	private int _playerId;
 
-	private static bool _dedicatedServer = false;
-	private static bool _privateServer = false;
-	private static bool _inGame = false;
+	private bool _dedicatedServer = false;
+	private bool _privateServer = false;
+	private bool _inGame = false;
 
-	private static string _serverDisconnectedPrompt;
-	private static string _ipAddress;
-	private static string _publicIpAddress;
-	private static string _serverRegion;
+	private string _serverDisconnectedPrompt;
+	private string _ipAddress;
+	private string _publicIpAddress;
+	private string _serverRegion;
 
-	private static ENetMultiplayerPeer _server;
-	private static ENetMultiplayerPeer _client;
+	private ENetMultiplayerPeer _server;
+	private ENetMultiplayerPeer _client;
 
-	private static MultiplayerAPI _multiplayerApi;
+	private MultiplayerAPI _multiplayerApi;
 
-	private static UPNP _upnp;
-	private static Thread _thread;
+	private UPNP _upnp;
+	private Thread _thread;
 
-	private static Dictionary<string, Variant> _players;
-	private static Dictionary<string, Variant> _playerData = new Dictionary<string, Variant>()
+	private Dictionary<string, Variant> _players;
+	private Dictionary<string, Variant> _playerData = new Dictionary<string, Variant>()
 	{
 		{ "username", "" },
 		{ "index", 0 },
@@ -146,11 +146,12 @@ public partial class Multiplayer : Node
 	/*
 		Public methods
 	*/
-	public static Error CreateServer()
+	public Error CreateServer()
 	{
 		Error error;
-
-		var saveServerPort = (int) Save.SaveData["ServerPort"];
+		Save save = new Save();
+		
+		var saveServerPort = (int) save.SaveData["ServerPort"];
 		
 		int clientLimit = DedicatedServer ? MAXCLIENTS : MAXCLIENTS - 1;
 		int port = (saveServerPort >= 3000) ? saveServerPort : DEFAULTPORT;
@@ -169,7 +170,7 @@ public partial class Multiplayer : Node
 		return error;
 	}
 
-	public static Error JoinServer(string serverIP, int serverPort = 24800)
+	public Error JoinServer(string serverIP, int serverPort = 24800)
 	{
 		return Error.Ok;
 	}
