@@ -14,7 +14,7 @@ public partial class Save : Node
 
 	// Private variables
 	// Constants
-	private readonly string SAVEGAME = "user://savedata.json";
+	private readonly string SAVEGAMEPATH = "user://savedata.pernk";
 	private readonly string[,] RANDOMUSERNAME = new string[,]
 	{
 		{
@@ -52,34 +52,59 @@ public partial class Save : Node
 	*/
 	private Dictionary<string, Variant> getData()
 	{
-		_randomNumberGenerator = new RandomNumberGenerator();
-		_randomNumberGenerator.Randomize();
-		_saveData = new Dictionary<string, Variant>()
-		{
-			{ "Username", 
-				RANDOMUSERNAME[0,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(0))]
-				+ RANDOMUSERNAME[1,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(1))] },
-			{ "MouseSensitivity", 0.08f },
-			{ "ControllerSensitivity", 1.0f },
-			{ "TargetFramerate", 0 },
-			{ "ShowFramerate", false },
-			{ "UseUPNP", false },
-			{ "ServerPort", 24800 },
-			{ "ServerRegion", "" },
-			{ "MusicVolumeDB", 10 },
-			{ "SoundVolumeDB", 10 },
-			{ "JingleVolumeDB", 10 },
-		};
+		Dictionary<string, Variant> savedData;
 
-		return _saveData;
+		if (!FileAccess.FileExists(SAVEGAMEPATH))
+		{
+			_randomNumberGenerator = new RandomNumberGenerator();
+			_randomNumberGenerator.Randomize();
+
+			_saveData = new Dictionary<string, Variant>()
+			{
+				{ "Username", 
+					RANDOMUSERNAME[0,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(0))]
+					+ RANDOMUSERNAME[1,_randomNumberGenerator.RandiRange(0, RANDOMUSERNAME.GetLength(1))] },
+				{ "MouseSensitivity", 0.08f },
+				{ "ControllerSensitivity", 1.0f },
+				{ "TargetFramerate", 0 },
+				{ "ShowFramerate", false },
+				{ "UseUPNP", false },
+				{ "ServerPort", 24800 },
+				{ "ServerRegion", "" },
+				{ "MusicVolumeDB", 10 },
+				{ "SoundVolumeDB", 10 },
+				{ "JingleVolumeDB", 10 },
+			};
+
+			saveGame();
+
+			return _saveData;
+		}
+
+
+		FileAccess fileAccess = FileAccess.Open(SAVEGAMEPATH, FileAccess.ModeFlags.Read);
+		
+		string content = fileAccess.GetLine();
+		
+		Variant data = JSON.ParseString(content);
+
+		savedData = (Dictionary<string, Variant>) data;
+
+		return savedData;
 	}
 
+	private void saveGame()
+	{
+		FileAccess saveGameData = FileAccess.Open(SAVEGAMEPATH, FileAccess.ModeFlags.Write);
+		saveGameData.StoreLine(JSON.Stringify(saveData));
+	}
 	/*
 		Public methods
 	*/
-	public void saveValue(string save_data_key, Variant save_data_value)
+	public void SaveValue(string save_data_key, Variant save_data_value)
 	{
-		// TODO: Implement saving
+		_saveData[save_data_key] = save_data_value;
+		saveGame();
 	}
 
 	/*
@@ -87,7 +112,7 @@ public partial class Save : Node
 	*/
 	public override void _Ready()
 	{
-		// TODO: Load save data
+		_saveData = getData();
 	}
 
 }
