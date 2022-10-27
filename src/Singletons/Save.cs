@@ -7,14 +7,14 @@ using System;
 public partial class Save : Node
 {
 	// Properties
-	public Dictionary<string, Variant> saveData
+	public static Dictionary<string, Variant> SaveData
 	{
 		get { return _saveData; }
 	}
 
 	// Private variables
 	// Constants
-	private readonly string SAVEGAMEPATH = "user://savedata.pernk";
+	private static readonly string SAVEGAMEPATH = "user://savedata.pernk";
 	private readonly string[,] RANDOMUSERNAME = new string[,]
 	{
 		{
@@ -45,7 +45,7 @@ public partial class Save : Node
 	};
 
 	// Other
-	private Dictionary<string, Variant> _saveData;
+	private static Dictionary<string, Variant> _saveData;
 	private RandomNumberGenerator _randomNumberGenerator;
 	/*
 		Private methods
@@ -93,15 +93,15 @@ public partial class Save : Node
 		return savedData;
 	}
 
-	private void saveGame()
+	private static void saveGame()
 	{
 		FileAccess saveGameData = FileAccess.Open(SAVEGAMEPATH, FileAccess.ModeFlags.Write);
-		saveGameData.StoreLine(JSON.Stringify(saveData));
+		saveGameData.StoreLine(JSON.Stringify(SaveData));
 	}
 	/*
 		Public methods
 	*/
-	public void SaveValue(string save_data_key, Variant save_data_value)
+	public static void SaveValue(string save_data_key, Variant save_data_value)
 	{
 		_saveData[save_data_key] = save_data_value;
 		saveGame();
