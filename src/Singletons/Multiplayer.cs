@@ -1,4 +1,5 @@
 // Code written by Oladeji Sanyaolu (Singleton/Multiplayer) 27/10/2022
+// To be honest, most of this code was from my other game 'RPMania', but I rewrote it in C# and adapted it for this game (plus made some improvements)
 
 using Godot;
 using Godot.Collections;
@@ -67,7 +68,7 @@ public partial class Multiplayer : Node
 		get { return _multiplayerApi; }
 	}
 
-	public Dictionary<string, Variant> Players
+	public Dictionary<int, Dictionary> Players
 	{
 		get { return _players; }
 	}
@@ -112,10 +113,11 @@ public partial class Multiplayer : Node
 	private UPNP _upnp;
 	private Thread _thread;
 
-	private Dictionary<string, Variant> _players;
+	private Dictionary<int, Dictionary> _players;
 	private Dictionary<string, Variant> _playerData = new Dictionary<string, Variant>()
 	{
 		{ "username", "" },
+		{ "character", new Godot.Collections.Array() },
 		{ "index", 0 },
 		{ "colour", "ffffff" },
 		{ "version", 0 },
@@ -142,10 +144,240 @@ public partial class Multiplayer : Node
 				IpAddress = ip;
 		}
 	}
+	private void resetMultiplayerConnection(bool resetIp = true)
+	{
+		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		
+		PlayerId = 0;
+		_players.Clear();
+
+		if (resetIp) resetIpAddress();
+
+		if (multiplayer.HasMultiplayerPeer())
+		{
+			multiplayer = null;
+			if (_server != null)
+				_server.CloseConnection();
+			if (_client != null)
+				_client.CloseConnection();
+			
+			// Ending thread
+			if (_thread != null)
+				if (_thread.IsAlive()) _thread.WaitToFinish();
+			
+			if (_upnp != null)
+			{
+				_upnp.DeletePortMapping(DEFAULTPORT);
+				_upnp = null;
+			}
+		}
+	}
+
+	// Thread methods
+	private void threadUPNPSetup(int serverPort, bool useIpv6)
+	{
+		if (serverPort != DEFAULTPORT)
+		{
+			GD.PrintErr("Aborted. Server port must be the game's default port (" + DEFAULTPORT + ") to use UPNP");
+			return;
+		}
+
+		// UPNP queries take some time.
+		_upnp = new UPNP();
+		_upnp.DiscoverIpv6 = useIpv6;
+		
+		var error = _upnp.Discover(2000, 2, "InternetGatewayDevice");
+
+		if (error != (int) Error.Ok)
+		{
+			// EmitSignal("UPNPCompletedEventHandler", error);
+			return;
+		}
+
+		if (_upnp.GetGateway() != null && _upnp.GetGateway().IsValidGateway())
+		{
+			_upnp.AddPortMapping(serverPort, serverPort, (string) ProjectSettings.GetSetting("application/config/name"), "UDP");
+			_upnp.AddPortMapping(serverPort, serverPort, (string) ProjectSettings.GetSetting("application/config/name"), "TCP");
+			// EmitSignal("UPNPCompletedEventHandler", Error.Ok);
+			return;
+		}
+
+		GD.Print("That's strange....UPNP was initialised, but gateway was invalid. Code: " + error);
+		_upnp = null;
+	}
+
+	// Private network methods
+	// Sync
+	private void syncUpdatePlayers(Dictionary<int, Dictionary> newPlayers)
+	{
+		_players = newPlayers;
+		// EmitSignal("PlayersUpdatedEventHandler", _players);
+	}
+	
+	private void syncEmitUpdatePlayers()
+	{
+		// EmitSignal("PlayersUpdatedEventHandler", _players);
+	}
+
+	private void syncDeregisterPlayer(int id)
+	{
+		_players.Remove(id);
+		// EmitSignal("PlayersUpdatedEventHandler", _players);
+		GD.Print("Deregistered: " + id);
+	}
+	// Remote
+	private void remoteSendPlayerInfo(int id, Dictionary playerData) // Only the server should call this
+	{
+		playerData["index"] = GetPlayerCount();
+		_players[id] = playerData;
+
+		Rpc(nameof(syncUpdatePlayers), _players);
+	}
+
+	private void remoteUpdatePlayerCharacter(int id, Godot.Collections.Array newPlayerChar, string newPlayerColour = "ffffff") // Only the server should call this
+	{
+		_players[id]["character"] = newPlayerChar; // Set the new character for the player
+		_players[id]["colour"] = newPlayerColour;
+
+		Rpc(nameof(syncUpdatePlayers), _players);
+	}
+
+	private void remoteUpdatePlayers(Dictionary newPlayers) // Only the server should call this
+	{
+		Rpc(nameof(syncUpdatePlayers), newPlayers);
+	}
 
 	/*
 		Public methods
 	*/
+
+	// Return methods
+	public int GetPlayerCount()
+	{
+		int count = 0;
+
+		for (int i = 0; i < Players.Count; i++)
+			count++;
+		
+		return count;
+	}
+
+	public string GetPlayerUsername(int playerId)
+	{
+		return (string) _players[playerId]["username"];
+	}
+
+	public string GetPlayerColour(int playerId)
+	{
+		return (string) _players[playerId]["colour"];
+	}
+
+	public string GetPlayerIndex(int playerId)
+	{
+		return (string) _players[playerId]["index"];
+	}
+
+	public bool PlayerExists(int playerId)
+	{
+		return _players[playerId] != null;
+	}
+	
+	public string GetGameVersionRStripped()
+	{
+		return GAMEVERSION.RStrip(GAMEVERSIONRSTRIP);
+	}
+
+	public bool CheckClientVersion()
+	{
+		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+
+		if (multiplayer.HasMultiplayerPeer())
+		{
+			if ((int) _players[PlayerId]["version"] == (int)_players[1]["version"])
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Non-return methods
+	// Handling player stuff
+	public void RegisterPlayer(int id = 0)
+	{
+		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		
+		if (id == 0)
+			id = multiplayer.GetUniqueId();
+		
+		if (PlayerExists(id)) // If the player is already in the player list we don't need to register them again
+			return;//UpdatePlayerCharacter(new Godot.Collections.Array(), "ffffff", id);
+		else
+		{
+			Save save = GetNode<Save>("/root/Save");
+
+			PlayerId = id;
+			_playerData["username"] = save.SaveData["username"];
+			_playerData["character"] = new Godot.Collections.Array();
+
+			_players[PlayerId] = (Dictionary) _playerData;
+			GD.Print("Registered: " + PlayerId);
+
+			if (multiplayer.IsServer())
+				Rpc(nameof(syncEmitUpdatePlayers));
+			else
+				RpcId(1, nameof(remoteSendPlayerInfo), PlayerId, _playerData);
+			
+		}
+	}
+
+	public void UpdatePlayerCharacter(Godot.Collections.Array newPlayerChar, string newPlayerColour, int id = 0)
+	{
+		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+
+		if (id == 0) id = multiplayer.GetUniqueId();
+
+		_players[id]["character"] = newPlayerChar;
+		_players[id]["colour"] = newPlayerColour;
+		
+		if (multiplayer.IsServer())
+			Rpc(nameof(syncUpdatePlayers), _players);
+		else
+			RpcId(1, nameof(remoteUpdatePlayerCharacter), id, newPlayerChar, newPlayerColour);
+	}
+
+	public void SwapPlayerIndex(int playerId, int otherPlayerId)
+	{
+		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+
+		int tempValue;
+
+		tempValue = (int) _players[playerId]["index"];
+
+		_players[playerId]["index"] = _players[otherPlayerId]["index"];
+		_players[otherPlayerId]["index"] = tempValue;
+
+		if (multiplayer.IsServer())
+			Rpc(nameof(syncUpdatePlayers), _players);
+		else
+			RpcId(1, nameof(remoteUpdatePlayers), _players);
+	}
+
+	// Public Multiplayer methods
+	// Remote
+	public void RemoteChangeScene(string newScene, bool currentlyInGame, Dictionary<int, Dictionary> playersList = null) // Will I even use this????
+	{
+		if (currentlyInGame)
+		{
+			InGame = currentlyInGame;
+			_players = playersList;
+			GetTree().ChangeSceneToFile(newScene);
+		} else {
+			InGame = false;
+			GetTree().ChangeSceneToFile("");
+		}
+	}
 
 	// Multiplayer Creation
 	public Error CreateServer()
@@ -178,12 +410,15 @@ public partial class Multiplayer : Node
 		return error;
 	}
 
-	public Error JoinServer(string serverIP, int serverPort = 24800)
+	public Error JoinServer(string serverIP, int serverPort = 0)
 	{
 		Error error;
 		Save save = (Save) GetNode<Save>("/root/Save");
 
 		IpAddress = serverIP;
+		
+		if (serverPort == 0)
+			serverPort = DEFAULTPORT;
 
 		int customClientPort = serverPort;
 		int port = (customClientPort > 2000) ? customClientPort : DEFAULTPORT;
@@ -208,6 +443,30 @@ public partial class Multiplayer : Node
 		return error;
 	}
 
+	/*
+		Signal Callbacks
+	*/
+	private void _onUPNPCompleted(Error result)
+	{
+		if (result == Error.Ok)
+		{
+			GD.Print("UPNP Initialised successfully! Code: " + result);
+			PublicIpAddress = _upnp.QueryExternalAddress();
+			GD.Print("Public IP: " + PublicIpAddress);
+		} else {
+			GD.Print("UPNP Failed to initialise! Code: " + result);
+			_upnp = null;
+		}
+	}
+
+	private void _onServerDisconnected()
+	{
+		if (ServerDisconnectedPrompt == "")
+			ServerDisconnectedPrompt = "Disconnected";
+		
+		resetMultiplayerConnection();
+		//GetTree().ChangeSceneToFile("");
+	}
 	/*
 		GODOT methods
 	*/
