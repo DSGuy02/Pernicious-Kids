@@ -56,6 +56,8 @@ public partial class Global : Node
 
     public override void _UnhandledInput(InputEvent inputEvent)
     {
+		Save save = (Save)GetNode<Save>("/root/Save");
+
 		if (inputEvent is InputEventKey) // It must confirm that the current InputEvent was infact, an InputEventKey
 		{
 			InputEventKey inputEventKey = (InputEventKey) inputEvent;
@@ -67,6 +69,8 @@ public partial class Global : Node
 					DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 				else
 					DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+				
+				save.SaveValue("Fullscreen", (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen));
 			}
 
 			// Set use UPNP
