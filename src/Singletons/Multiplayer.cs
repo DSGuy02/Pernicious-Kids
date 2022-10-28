@@ -491,4 +491,10 @@ public partial class Multiplayer : Node
 		// Multiplayer
 		multiplayerApi.ServerDisconnected += () => _onServerDisconnected();
 	}
+
+    public override void _ExitTree()
+    {
+        if (_thread != null && _thread.IsAlive()) // To ensure the game quits properly
+			_thread.WaitToFinish();
+    }
 }

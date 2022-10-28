@@ -6,5 +6,11 @@ using System;
 
 public partial class TestWorld : World
 {
-
+    /*
+        Godot method
+    */
+    public override void _Ready()
+    {
+        SetupWorld();
+    }
 }
