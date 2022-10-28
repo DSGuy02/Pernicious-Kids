@@ -63,9 +63,9 @@ public partial class Multiplayer : Node
 		set { _serverRegion = value; }
 	}
 
-	public MultiplayerAPI API
+	public MultiplayerAPI CustomMultiplayerAPI
 	{
-		get { return _multiplayerApi; }
+		get { return _customMultiplayerAPI; }
 	}
 
 	public Dictionary<int, Dictionary> Players
@@ -108,7 +108,7 @@ public partial class Multiplayer : Node
 	private ENetMultiplayerPeer _server;
 	private ENetMultiplayerPeer _client;
 
-	private MultiplayerAPI _multiplayerApi;
+	private MultiplayerAPI _customMultiplayerAPI;
 
 	private UPNP _upnp;
 	private Thread _thread;
@@ -146,7 +146,7 @@ public partial class Multiplayer : Node
 	}
 	private void resetMultiplayerConnection(bool resetIp = true)
 	{
-		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 		
 		PlayerId = 0;
 		_players.Clear();
@@ -190,7 +190,7 @@ public partial class Multiplayer : Node
 
 		if (error != (int) Error.Ok)
 		{
-			// EmitSignal("UPNPCompletedEventHandler", error);
+			EmitSignal(nameof(UPNPCompleted), error);
 			return;
 		}
 
@@ -198,7 +198,7 @@ public partial class Multiplayer : Node
 		{
 			_upnp.AddPortMapping(serverPort, serverPort, (string) ProjectSettings.GetSetting("application/config/name"), "UDP");
 			_upnp.AddPortMapping(serverPort, serverPort, (string) ProjectSettings.GetSetting("application/config/name"), "TCP");
-			// EmitSignal("UPNPCompletedEventHandler", Error.Ok);
+			EmitSignal(nameof(UPNPCompleted), error);
 			return;
 		}
 
@@ -211,18 +211,18 @@ public partial class Multiplayer : Node
 	private void syncUpdatePlayers(Dictionary<int, Dictionary> newPlayers)
 	{
 		_players = newPlayers;
-		// EmitSignal("PlayersUpdatedEventHandler", _players);
+		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 	
 	private void syncEmitUpdatePlayers()
 	{
-		// EmitSignal("PlayersUpdatedEventHandler", _players);
+		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 
 	private void syncDeregisterPlayer(int id)
 	{
 		_players.Remove(id);
-		// EmitSignal("PlayersUpdatedEventHandler", _players);
+		EmitSignal(nameof(PlayersUpdated), _players);
 		GD.Print("Deregistered: " + id);
 	}
 	// Remote
@@ -289,7 +289,7 @@ public partial class Multiplayer : Node
 
 	public bool CheckClientVersion()
 	{
-		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 
 		if (multiplayer.HasMultiplayerPeer())
 		{
@@ -306,7 +306,7 @@ public partial class Multiplayer : Node
 	// Handling player stuff
 	public void RegisterPlayer(int id = 0)
 	{
-		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 		
 		if (id == 0)
 			id = multiplayer.GetUniqueId();
@@ -334,7 +334,7 @@ public partial class Multiplayer : Node
 
 	public void UpdatePlayerCharacter(Godot.Collections.Array newPlayerChar, string newPlayerColour, int id = 0)
 	{
-		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 
 		if (id == 0) id = multiplayer.GetUniqueId();
 
@@ -349,7 +349,7 @@ public partial class Multiplayer : Node
 
 	public void SwapPlayerIndex(int playerId, int otherPlayerId)
 	{
-		var multiplayer = (_multiplayerApi != null) ? _multiplayerApi : GetTree().GetMultiplayer();
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 
 		int tempValue;
 
@@ -399,9 +399,9 @@ public partial class Multiplayer : Node
 			return error;
 		}
 		
-		// _multiplayerPeer = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
-		//API.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
-		//GetTree().SetMultiplayer(API); // Can't do this yet
+		// _customMultiplayerAPI = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
+		//_customMultiplayerAPI.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
+		//GetTree().SetMultiplayer(_customMultiplayerAPI); // Can't do this yet
 
 		GetTree().GetMultiplayer().MultiplayerPeer = _server; // Screw it, I'll just use the SceneTree's default multiplayer
 		
@@ -432,9 +432,9 @@ public partial class Multiplayer : Node
 			return error;
 		}
 
-		// _multiplayerPeer = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
-		//API.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
-		//GetTree().SetMultiplayer(API); // Can't do this yet
+		// _customMultiplayerAPI = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
+		//_customMultiplayerAPI.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
+		//GetTree().SetMultiplayer(_customMultiplayerAPI); // Can't do this yet
 
 		GetTree().GetMultiplayer().MultiplayerPeer = _client; // Screw it, I'll just use the SceneTree's default multiplayer
 
@@ -472,6 +472,15 @@ public partial class Multiplayer : Node
 	*/
 	public override void _Ready()
 	{
+		var multiplayerApi = (CustomMultiplayerAPI != null) ? CustomMultiplayerAPI : GetTree().GetMultiplayer();
+
 		resetIpAddress();
+
+		// Connect signals
+		// Custom
+		UPNPCompleted += _onUPNPCompleted; // This has a parameter so yeah
+
+		// Multiplayer
+		multiplayerApi.ServerDisconnected += () => _onServerDisconnected();
 	}
 }
