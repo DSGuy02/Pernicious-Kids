@@ -19,8 +19,10 @@ public partial class NetworkSetup : Control
 	{
 		var error = _multiplayer.CreateServer();
 		if (error == Error.Ok)
+		{
 			_multiplayer.RegisterPlayer();
 			GetTree().ChangeSceneToFile("res://src/World/TestWorld.tscn");
+		}
 	}
 
 	private void _onJoinServerPressed()

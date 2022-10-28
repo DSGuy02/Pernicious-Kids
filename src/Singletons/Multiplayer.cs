@@ -113,14 +113,14 @@ public partial class Multiplayer : Node
 	private UPNP _upnp;
 	private Thread _thread;
 
-	private Dictionary<int, Dictionary> _players;
+	private Dictionary<int, Dictionary> _players = new Dictionary<int, Dictionary>();
 	private Dictionary<string, Variant> _playerData = new Dictionary<string, Variant>()
 	{
-		{ "username", "" },
-		{ "character", new Godot.Collections.Array() },
-		{ "index", 0 },
-		{ "colour", "ffffff" },
-		{ "version", 0 },
+		{ "Username", "" },
+		{ "Character", new Godot.Collections.Array() },
+		{ "Index", 0 },
+		{ "Colour", "ffffff" },
+		{ "Version", 0 },
 	};
 
 
@@ -214,17 +214,12 @@ public partial class Multiplayer : Node
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 	
+
 	private void syncEmitUpdatePlayers()
 	{
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 
-	private void syncDeregisterPlayer(int id)
-	{
-		_players.Remove(id);
-		EmitSignal(nameof(PlayersUpdated), _players);
-		GD.Print("Deregistered: " + id);
-	}
 	// Remote
 	private void remoteSendPlayerInfo(int id, Dictionary playerData) // Only the server should call this
 	{
@@ -264,22 +259,22 @@ public partial class Multiplayer : Node
 
 	public string GetPlayerUsername(int playerId)
 	{
-		return (string) _players[playerId]["username"];
+		return (string) _players[playerId]["Username"];
 	}
 
 	public string GetPlayerColour(int playerId)
 	{
-		return (string) _players[playerId]["colour"];
+		return (string) _players[playerId]["Colour"];
 	}
 
 	public string GetPlayerIndex(int playerId)
 	{
-		return (string) _players[playerId]["index"];
+		return (string) _players[playerId]["Index"];
 	}
 
 	public bool PlayerExists(int playerId)
 	{
-		return _players[playerId] != null;
+		return false;//return _players[playerId] != null;
 	}
 	
 	public string GetGameVersionRStripped()
@@ -318,10 +313,12 @@ public partial class Multiplayer : Node
 			Save save = GetNode<Save>("/root/Save");
 
 			PlayerId = id;
-			_playerData["username"] = save.SaveData["username"];
-			_playerData["character"] = new Godot.Collections.Array();
+			
+			_playerData["Username"] = save.SaveData["Username"];
+			_playerData["Character"] = new Godot.Collections.Array();
 
 			_players[PlayerId] = (Dictionary) _playerData;
+
 			GD.Print("Registered: " + PlayerId);
 
 			if (multiplayer.IsServer())
@@ -331,6 +328,12 @@ public partial class Multiplayer : Node
 			
 		}
 	}
+	public void DeregisterPlayer(int id)
+	{
+		_players.Remove(id);
+		EmitSignal(nameof(PlayersUpdated), _players);
+		GD.Print("Deregistered: " + id);
+	}
 
 	public void UpdatePlayerCharacter(Godot.Collections.Array newPlayerChar, string newPlayerColour, int id = 0)
 	{
@@ -338,8 +341,8 @@ public partial class Multiplayer : Node
 
 		if (id == 0) id = multiplayer.GetUniqueId();
 
-		_players[id]["character"] = newPlayerChar;
-		_players[id]["colour"] = newPlayerColour;
+		_players[id]["Character"] = newPlayerChar;
+		_players[id]["Colour"] = newPlayerColour;
 		
 		if (multiplayer.IsServer())
 			Rpc(nameof(syncUpdatePlayers), _players);
@@ -353,10 +356,10 @@ public partial class Multiplayer : Node
 
 		int tempValue;
 
-		tempValue = (int) _players[playerId]["index"];
+		tempValue = (int) _players[playerId]["Index"];
 
-		_players[playerId]["index"] = _players[otherPlayerId]["index"];
-		_players[otherPlayerId]["index"] = tempValue;
+		_players[playerId]["Index"] = _players[otherPlayerId]["Index"];
+		_players[otherPlayerId]["Index"] = tempValue;
 
 		if (multiplayer.IsServer())
 			Rpc(nameof(syncUpdatePlayers), _players);
@@ -472,6 +475,9 @@ public partial class Multiplayer : Node
 	*/
 	public override void _Ready()
 	{
+		#if GODOT
+			GD.Print("Godot!");
+		#endif
 		var multiplayerApi = (CustomMultiplayerAPI != null) ? CustomMultiplayerAPI : GetTree().GetMultiplayer();
 
 		resetIpAddress();
