@@ -218,6 +218,7 @@ public partial class Player : CharacterBody3D
 	/*
 		Network Methods
 	*/
+	[RPC]
 	private void puppetUpdateState(Vector3 pPosition, Vector3 pVelocity, Vector2 pRotation)
 	{
 		_puppetPosition = pPosition;

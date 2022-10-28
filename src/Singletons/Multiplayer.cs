@@ -208,6 +208,7 @@ public partial class Multiplayer : Node
 
 	// Private network methods
 	// Sync
+	[RPC]
 	private void syncUpdatePlayers(Dictionary<int, Dictionary> newPlayers)
 	{
 		_players = newPlayers;
@@ -215,12 +216,14 @@ public partial class Multiplayer : Node
 	}
 	
 
+	[RPC]
 	private void syncEmitUpdatePlayers()
 	{
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 
 	// Remote
+	[RPC]
 	private void remoteSendPlayerInfo(int id, Dictionary playerData) // Only the server should call this
 	{
 		playerData["index"] = GetPlayerCount();
@@ -229,6 +232,7 @@ public partial class Multiplayer : Node
 		Rpc(nameof(syncUpdatePlayers), _players);
 	}
 
+	[RPC]
 	private void remoteUpdatePlayerCharacter(int id, Godot.Collections.Array newPlayerChar, string newPlayerColour = "ffffff") // Only the server should call this
 	{
 		_players[id]["character"] = newPlayerChar; // Set the new character for the player
@@ -237,6 +241,7 @@ public partial class Multiplayer : Node
 		Rpc(nameof(syncUpdatePlayers), _players);
 	}
 
+	[RPC]
 	private void remoteUpdatePlayers(Dictionary newPlayers) // Only the server should call this
 	{
 		Rpc(nameof(syncUpdatePlayers), newPlayers);
@@ -475,9 +480,6 @@ public partial class Multiplayer : Node
 	*/
 	public override void _Ready()
 	{
-		#if GODOT
-			GD.Print("Godot!");
-		#endif
 		var multiplayerApi = (CustomMultiplayerAPI != null) ? CustomMultiplayerAPI : GetTree().GetMultiplayer();
 
 		resetIpAddress();
