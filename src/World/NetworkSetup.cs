@@ -7,7 +7,8 @@ public partial class NetworkSetup : Control
 {
 	// Private variables
 	// Nodes
-	private MultiplayerAPI _multiplayer;
+	private Multiplayer _multiplayer;
+	private MultiplayerAPI _multiplayerApi;
 	private Button _createServer;
 	private Button _joinServer;
 
@@ -16,14 +17,15 @@ public partial class NetworkSetup : Control
 	*/
 	private void _onCreateServerPressed()
 	{
-		Multiplayer multiplayer = (Multiplayer) GetNode<Multiplayer>("/root/Multiplayer");
-		var error = multiplayer.CreateServer();
+		var error = _multiplayer.CreateServer();
+		if (error == Error.Ok)
+			_multiplayer.RegisterPlayer();
+			GetTree().ChangeSceneToFile("res://src/World/TestWorld.tscn");
 	}
 
 	private void _onJoinServerPressed()
 	{
-		Multiplayer multiplayer = (Multiplayer) GetNode<Multiplayer>("/root/Multiplayer");
-		var error = multiplayer.JoinServer(multiplayer.IpAddress);
+		var error = _multiplayer.JoinServer(_multiplayer.IpAddress);
 	}
 
 	// Network signals
@@ -37,7 +39,8 @@ public partial class NetworkSetup : Control
 	public override void _Ready()
 	{
 		// Get the nodes from their NodePaths
-		_multiplayer = GetTree().GetMultiplayer();
+		_multiplayerApi = GetTree().GetMultiplayer();
+		_multiplayer = (Multiplayer) GetNode<Multiplayer>("/root/Multiplayer");
 		_createServer = (Button) GetNode<Button>("CreateServer");
 		_joinServer = (Button) GetNode<Button>("JoinServer");
 
@@ -46,6 +49,6 @@ public partial class NetworkSetup : Control
 		_joinServer.Pressed += () => _onJoinServerPressed();
 		
 		// Network signals
-		_multiplayer.ConnectedToServer += () => _onMultiplayerConnectedToServer();
+		_multiplayerApi.ConnectedToServer += () => _onMultiplayerConnectedToServer();
 	}
 }
