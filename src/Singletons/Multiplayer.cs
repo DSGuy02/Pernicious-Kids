@@ -207,43 +207,62 @@ public partial class Multiplayer : Node
 	}
 
 	// Private network methods
-	// Sync
-	[RPC]
+	// Authority (Server)
+	[RPC(MultiplayerAPI.RPCMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
 	private void syncUpdatePlayers(Dictionary<int, Dictionary> newPlayers)
 	{
+		//GD.Print("Players are updated");
 		_players = newPlayers;
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 	
-
-	[RPC]
+	[RPC(MultiplayerAPI.RPCMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
 	private void syncEmitUpdatePlayers()
 	{
+		//GD.Print("Player update signal emitted");
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 
-	// Remote
-	[RPC]
-	private void remoteSendPlayerInfo(int id, Dictionary playerData) // Only the server should call this
+	// Any peer can call this methods
+	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	private void remoteSendPlayerInfo(int id, Dictionary playerData) 
 	{
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
+
+		// Only the server should make the update
+		if (!multiplayer.IsServer())
+			return;
+		
 		playerData["index"] = GetPlayerCount();
 		_players[id] = playerData;
 
-		Rpc(nameof(syncUpdatePlayers), _players);
+		Rpc(nameof(syncUpdatePlayers), _players); 
 	}
 
-	[RPC]
-	private void remoteUpdatePlayerCharacter(int id, Godot.Collections.Array newPlayerChar, string newPlayerColour = "ffffff") // Only the server should call this
+	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	private void remoteUpdatePlayerCharacter(int id, Godot.Collections.Array newPlayerChar, string newPlayerColour = "ffffff")
 	{
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
+
+		// Only the server should make the update
+		if (!multiplayer.IsServer())
+			return;
+		
 		_players[id]["character"] = newPlayerChar; // Set the new character for the player
 		_players[id]["colour"] = newPlayerColour;
 
 		Rpc(nameof(syncUpdatePlayers), _players);
 	}
 
-	[RPC]
-	private void remoteUpdatePlayers(Dictionary newPlayers) // Only the server should call this
+	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	private void remoteUpdatePlayers(Dictionary newPlayers)
 	{
+		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
+
+		// Only the server should make the update
+		if (!multiplayer.IsServer())
+			return;
+		
 		Rpc(nameof(syncUpdatePlayers), newPlayers);
 	}
 

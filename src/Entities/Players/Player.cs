@@ -28,6 +28,12 @@ public partial class Player : CharacterBody3D
 		}
 	}
 
+	public string Username
+	{
+		get { return _username; }
+		set { _username = value; }
+	}
+
 
 	public Vector3 CameraPosition
 	{
@@ -68,7 +74,11 @@ public partial class Player : CharacterBody3D
 	
 	// Other variables
 	private MultiplayerAPI _multiplayerApi;
+
 	private bool _confineHideMouse = false;
+
+	private string _username;
+
 	private float _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle(); // Get the gravity from the project settings to be synced with RigidBody nodes.
 	private float _mouseSensitivity = 0.08f;
 	private float _controllerSensitivity = 1.0f;
@@ -218,7 +228,7 @@ public partial class Player : CharacterBody3D
 	/*
 		Network Methods
 	*/
-	[RPC]
+	[RPC(MultiplayerAPI.RPCMode.Authority)]
 	private void puppetUpdateState(Vector3 pPosition, Vector3 pVelocity, Vector2 pRotation)
 	{
 		_puppetPosition = pPosition;
