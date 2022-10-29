@@ -192,8 +192,8 @@ public partial class Player : CharacterBody3D
 
 			//GD.Print("Speed: " + _speed);
 			//GD.Print("Stamina: " + _stamina);
-			GD.Print("Rotation: " + Rotation.ToString());
-			GD.Print("Head Rotation: " + _head.Rotation);
+			//GD.Print("Rotation: " + Rotation.ToString());
+			//GD.Print("Head Rotation: " + _head.Rotation);
 
 			Vector3 desiredVelocity = getInput() * _speed;
 
