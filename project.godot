@@ -21,6 +21,10 @@ Save="res://src/Singletons/Save.cs"
 Multiplayer="res://src/Singletons/Multiplayer.cs"
 Global="res://src/Singletons/Global.cs"
 
+[display]
+
+window/stretch/mode="canvas_items"
+
 [dotnet]
 
 project/assembly_name="Pernicious Kids"
