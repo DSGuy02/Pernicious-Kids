@@ -206,14 +206,12 @@ public partial class Player : CharacterBody3D
 		} else { // This is not our character
 
 			var newGlobalTransform = GlobalTransform;
-			var newQuaternion = new Quaternion(GlobalTransform.basis);
 			var newHeadRotation = _head.Rotation;
 
 			newGlobalTransform.origin = _puppetPosition;
-			newQuaternion.y = _puppetRotation.y;
 			newHeadRotation.x = _puppetRotation.x;
 
-			newGlobalTransform.basis = new Basis(Vector3.Up, newQuaternion.y);
+			newGlobalTransform.basis = new Basis(Vector3.Up, _puppetRotation.y);
 			GlobalTransform = newGlobalTransform.Orthonormalized();
 
 			velocity.x = _puppetVelocity.x;
