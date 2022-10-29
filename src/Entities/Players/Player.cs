@@ -192,6 +192,8 @@ public partial class Player : CharacterBody3D
 
 			//GD.Print("Speed: " + _speed);
 			//GD.Print("Stamina: " + _stamina);
+			GD.Print("Rotation: " + Rotation.ToString());
+			GD.Print("Head Rotation: " + _head.Rotation);
 
 			Vector3 desiredVelocity = getInput() * _speed;
 
@@ -215,12 +217,15 @@ public partial class Player : CharacterBody3D
 
 			velocity.x = _puppetVelocity.x;
 			velocity.z = _puppetVelocity.z;
-
-			Quaternion = new Quaternion(newRotation.x, newRotation.y, newRotation.z, Quaternion.w).Normalized();
+			
+			Rotation = newRotation;
 			_head.Rotation = newHeadRotation;
 
-			GD.Print(GetMultiplayerAuthority() + "'s rotation: " + Rotation);
-			GD.Print(GetMultiplayerAuthority() + "'s head rotation: " + _head.Rotation);
+			GD.Print(GetMultiplayerAuthority() + "'s new rotation: " + newRotation);
+			GD.Print(GetMultiplayerAuthority() + "'s new head rotation: " + newHeadRotation);
+
+			//GD.Print(GetMultiplayerAuthority() + "'s rotation: " + Rotation);
+			//GD.Print(GetMultiplayerAuthority() + "'s head rotation: " + _head.Rotation);
 		}
 
 		// Apply the whole physics
