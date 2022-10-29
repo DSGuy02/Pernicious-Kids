@@ -207,17 +207,20 @@ public partial class Player : CharacterBody3D
 			var newRotation = Rotation;
 			var newHeadRotation = _head.Rotation;
 
-			//newGlobalTransform.origin = _puppetPosition;
-			//newRotation.y = _puppetRotation.y;
-			//newHeadRotation.x = _puppetRotation.x;
+			newGlobalTransform.origin = _puppetPosition;
+			newRotation.y = _puppetRotation.y;
+			newHeadRotation.x = _puppetRotation.x;
 
-			//GlobalTransform = newGlobalTransform;
+			GlobalTransform = newGlobalTransform;
 
-			//velocity.x = _puppetVelocity.x;
-			//velocity.z = _puppetVelocity.z;
+			velocity.x = _puppetVelocity.x;
+			velocity.z = _puppetVelocity.z;
 
-			//Rotation = newRotation;
-			//_head.Rotation = newHeadRotation;
+			Quaternion = new Quaternion(newRotation.x, newRotation.y, newRotation.z, Quaternion.w).Normalized();
+			_head.Rotation = newHeadRotation;
+
+			GD.Print(GetMultiplayerAuthority() + "'s rotation: " + Rotation);
+			GD.Print(GetMultiplayerAuthority() + "'s head rotation: " + _head.Rotation);
 		}
 
 		// Apply the whole physics
