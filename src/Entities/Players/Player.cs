@@ -206,25 +206,27 @@ public partial class Player : CharacterBody3D
 		} else { // This is not our character
 
 			var newGlobalTransform = GlobalTransform;
-			var newRotation = Rotation;
 			var newHeadRotation = _head.Rotation;
+			var newQuaternion = new Quaternion(GlobalTransform.basis);
 
 			newGlobalTransform.origin = _puppetPosition;
-			newRotation.y = _puppetRotation.y;
+			newQuaternion.y = _puppetRotation.y;
 			newHeadRotation.x = _puppetRotation.x;
 
 			GlobalTransform = newGlobalTransform;
 
 			velocity.x = _puppetVelocity.x;
 			velocity.z = _puppetVelocity.z;
-			
-			Rotation = newRotation;
+
+			Quaternion = newQuaternion.Normalized();
+
+			//Rotation += newRotation.Normalized();
 			_head.Rotation = newHeadRotation;
 
-			GD.Print(GetMultiplayerAuthority() + "'s new rotation: " + newRotation);
-			GD.Print(GetMultiplayerAuthority() + "'s new head rotation: " + newHeadRotation);
+			//GD.Print(GetMultiplayerAuthority() + "'s new rotation: " + newRotation);
+			//GD.Print(GetMultiplayerAuthority() + "'s new head rotation: " + newHeadRotation);
 
-			//GD.Print(GetMultiplayerAuthority() + "'s rotation: " + Rotation);
+			GD.Print(GetMultiplayerAuthority() + "'s rotation: " + Rotation);
 			//GD.Print(GetMultiplayerAuthority() + "'s head rotation: " + _head.Rotation);
 		}
 
