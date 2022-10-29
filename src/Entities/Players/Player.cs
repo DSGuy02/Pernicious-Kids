@@ -14,15 +14,15 @@ public partial class Player : CharacterBody3D
 		get { return _multiplayerApi; }
 	}
 
-	public bool ConfineHideMouse
+	public bool CaptureMouse
 	{
-		get { return _confineHideMouse; }
+		get { return _captureMouse; }
 		set
 		{
-			_confineHideMouse = value;
+			_captureMouse = value;
 			
-			if (_confineHideMouse)
-				Input.MouseMode = Input.MouseModeEnum.ConfinedHidden;
+			if (_captureMouse)
+				Input.MouseMode = Input.MouseModeEnum.Captured;
 			else
 				Input.MouseMode = Input.MouseModeEnum.Visible;
 		}
@@ -75,7 +75,7 @@ public partial class Player : CharacterBody3D
 	// Other variables
 	private MultiplayerAPI _multiplayerApi;
 
-	private bool _confineHideMouse = false;
+	private bool _captureMouse = false;
 
 	private string _username;
 
@@ -324,7 +324,7 @@ public partial class Player : CharacterBody3D
 
 				if (inputEventKey.IsActionPressed("toggle_mouse")) // TOggle having the mouse confined or visible
 				{
-					ConfineHideMouse = !ConfineHideMouse;
+					CaptureMouse = !CaptureMouse;
 				}
 			}
 
