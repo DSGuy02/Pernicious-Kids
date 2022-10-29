@@ -209,13 +209,14 @@ public partial class Player : CharacterBody3D
 			var newHeadRotation = _head.Rotation;
 
 			newGlobalTransform.origin = _puppetPosition;
-			newHeadRotation.x = _puppetRotation.x;
-
 			newGlobalTransform.basis = new Basis(Vector3.Up, _puppetRotation.y);
+
 			GlobalTransform = newGlobalTransform.Orthonormalized();
 
 			velocity.x = _puppetVelocity.x;
 			velocity.z = _puppetVelocity.z;
+
+			newHeadRotation.x = _puppetRotation.x;
 			
 			_head.Rotation = newHeadRotation;
 
