@@ -27,6 +27,11 @@ public partial class Player : CharacterBody3D
 				Input.MouseMode = Input.MouseModeEnum.Visible;
 		}
 	}
+	public bool Crouched
+	{
+		get { return _crouched; }
+		set { _crouched = value; }
+	}
 
 	public string Username
 	{
@@ -56,7 +61,8 @@ public partial class Player : CharacterBody3D
 	// Constants
 	private readonly int JUMPVELOCITY = 2;
 	private readonly int MAXSPEED = 10;
-	private readonly int MINSPEED = 5;
+	private readonly int NORSPEED = 5;
+	private readonly int MINSPEED = 1;
 	private readonly int MAXSTAMINA = 100;
 
 	private readonly float SPEEDWEIGHT = 0.1f;
@@ -76,6 +82,7 @@ public partial class Player : CharacterBody3D
 	private MultiplayerAPI _multiplayerApi;
 
 	private bool _captureMouse = false;
+	private bool _crouched = false;
 
 	private string _username;
 
@@ -175,23 +182,30 @@ public partial class Player : CharacterBody3D
 		{
 			handleControllerCamera();
 
-			if (sprint) // Make the player run and consume their energy
+			if (!Crouched)
 			{
-				if (_stamina > 1)
+				if (sprint) // Make the player run and consume their energy
 				{
-					_speed = Mathf.Lerp(_speed, MAXSPEED, SPEEDWEIGHT);
-					_stamina = Mathf.Lerp(_stamina, 0, STAMINAWEIGHT);
-				} else { // Revert only the player's speed
-					_speed = Mathf.Lerp(_speed, MINSPEED, SPEEDWEIGHT * 2);
+					if (_stamina > 2)
+					{
+						_speed = Mathf.Lerp(_speed, MAXSPEED, SPEEDWEIGHT);
+						_stamina = Mathf.Lerp(_stamina, 0, STAMINAWEIGHT);
+					} else { // Revert only the player's speed
+						_speed = Mathf.Lerp(_speed, NORSPEED, SPEEDWEIGHT * 2);
+					}
 				}
-			
-			} else { // Revert the player's speed and slowly restore their energy
-				_speed = Mathf.Lerp(_speed, MINSPEED, SPEEDWEIGHT * 2);
+			} else {
+				_speed = Mathf.Lerp(_speed, MINSPEED, SPEEDWEIGHT * 1.5f);
+			}
+
+			if (Crouched || !sprint) { // Revert the player's speed and slowly restore their energy if they're crouched
+				_speed = Mathf.Lerp(_speed, NORSPEED, SPEEDWEIGHT * 2);
 				_stamina = Mathf.Lerp(_stamina, MAXSTAMINA, STAMINAWEIGHT / 2);
 			}
 
-			//GD.Print("Speed: " + _speed);
-			//GD.Print("Stamina: " + _stamina);
+			GD.Print("Speed: " + _speed);
+			GD.Print("Stamina: " + _stamina);
+			GD.Print("Crouched: " + Crouched);
 			//GD.Print("Rotation: " + Rotation.ToString());
 			//GD.Print("Head Rotation: " + _head.Rotation);
 
@@ -330,9 +344,9 @@ public partial class Player : CharacterBody3D
 				InputEventKey inputEventKey = (InputEventKey) inputEvent;
 
 				if (inputEventKey.IsActionPressed("toggle_mouse")) // TOggle having the mouse confined or visible
-				{
 					CaptureMouse = !CaptureMouse;
-				}
+				else if (inputEventKey.IsActionPressed("crouch")) // Make the player crouch
+					Crouched = !Crouched;
 			}
 
 			if (inputEvent.IsActionPressed("change_camera"))

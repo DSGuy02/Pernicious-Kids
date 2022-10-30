@@ -10,6 +10,5 @@ public partial class Sam : Player
 	*/
 	public override void _Ready()
 	{
-		
 	}
 }
