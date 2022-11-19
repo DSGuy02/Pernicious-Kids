@@ -156,11 +156,11 @@ public partial class Multiplayer : Node
 		if (multiplayer.HasMultiplayerPeer())
 		{
 			multiplayer = null;
-			if (_server != null)
+			/*if (_server != null)
 				_server.CloseConnection();
 			if (_client != null)
 				_client.CloseConnection();
-			
+			*/
 			// Ending thread
 			if (_thread != null)
 				if (_thread.IsAlive()) _thread.WaitToFinish();
@@ -306,7 +306,7 @@ public partial class Multiplayer : Node
 		return GAMEVERSION.RStrip(GAMEVERSIONRSTRIP);
 	}
 
-	public bool CheckClientVersion()
+	public bool IsValidClientVersion()
 	{
 		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
 
@@ -331,7 +331,7 @@ public partial class Multiplayer : Node
 			id = multiplayer.GetUniqueId();
 		
 		if (PlayerExists(id)) // If the player is already in the player list we don't need to register them again
-			return;//UpdatePlayerCharacter(new Godot.Collections.Array(), "ffffff", id);
+			UpdatePlayerCharacter(new Godot.Collections.Array(), "ffffff", id);
 		else
 		{
 			Save save = GetNode<Save>("/root/Save");
