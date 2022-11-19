@@ -11,7 +11,7 @@
 .vs/
 
 # My custom files to ignore
-git_push.sh
+#git_push.sh
 
 # My custom folders to ignore
 Builds/
