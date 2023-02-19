@@ -6,7 +6,7 @@ public partial class World : Node3D
 {
 	// Private field
 	private Multiplayer _multiplayer;
-	private MultiplayerAPI _multiplayerApi;
+	private MultiplayerApi _multiplayerApi;
 	/*
 		Private methods
 	*/

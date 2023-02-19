@@ -1,7 +1,7 @@
 {
-    "godot_tools.editor_path": "/home/oladeji/Documents/Games/Godot/v4/Godot_v4.0-beta3_mono_linux_x86_64/Godot_v4.0-beta3_mono_linux.x86_64",
-    "godot_tools.gdscript_lsp_server_port": 6005,
+    "godot_tools.editor_path": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-rc1_mono_linux_x86_64",
+    "godot_tools.gdscript_lsp_server_port": 6008,
     "omnisharp.useModernNet": true,
     "omnisharp.sdkPath": "/usr/share/dotnet/sdk/6.0.402",
-    "godot.csharp.executablePath": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-beta3_mono_linux_x86_64/Godot_v4.0-beta3_mono_linux.x86_64"
+    "godot.csharp.executablePath": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-rc1_mono_linux_x86_64"
 }

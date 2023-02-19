@@ -16,7 +16,7 @@
             "request": "launch",
             "mode": "executable",
             "preLaunchTask": "build",
-            "executable": "/home/oladeji/Documents/Games/Godot/v4/Godot_v4.0-beta3_mono_linux_x86_64/Godot_v4.0-beta3_mono_linux.x86_64",
+            "executable": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-rc1_mono_linux_x86_64",
             "executableArguments": [
                 "--path",
                 "${workspaceRoot}"
@@ -28,7 +28,7 @@
             "request": "launch",
             "mode": "executable",
             "preLaunchTask": "build",
-            "executable": "/home/oladeji/Documents/Games/Godot/v4/Godot_v4.0-beta3_mono_linux_x86_64/Godot_v4.0-beta3_mono_linux.x86_64",
+            "executable": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-rc1_mono_linux_x86_64",
             "executableArguments": [
                 "--path",
                 "${workspaceRoot}",

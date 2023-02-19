@@ -63,7 +63,7 @@ public partial class Multiplayer : Node
 		set { _serverRegion = value; }
 	}
 
-	public MultiplayerAPI CustomMultiplayerAPI
+	public MultiplayerApi CustomMultiplayerAPI
 	{
 		get { return _customMultiplayerAPI; }
 	}
@@ -108,10 +108,10 @@ public partial class Multiplayer : Node
 	private ENetMultiplayerPeer _server;
 	private ENetMultiplayerPeer _client;
 
-	private MultiplayerAPI _customMultiplayerAPI;
+	private MultiplayerApi _customMultiplayerAPI;
 
-	private UPNP _upnp;
-	private Thread _thread;
+	private Upnp _upnp;
+	private GodotThread _thread;
 
 	private Dictionary<int, Dictionary> _players = new Dictionary<int, Dictionary>();
 	private Dictionary<string, Variant> _playerData = new Dictionary<string, Variant>()
@@ -140,7 +140,7 @@ public partial class Multiplayer : Node
 		
 		foreach(string ip in IP.GetLocalAddresses())
 		{
-			if (ip.BeginsWith("192.168.") && !ip.EndsWith(".1"))
+			if (ip.StartsWith("192.168.") && !ip.EndsWith(".1"))
 				IpAddress = ip;
 		}
 	}
@@ -183,7 +183,7 @@ public partial class Multiplayer : Node
 		}
 
 		// UPNP queries take some time.
-		_upnp = new UPNP();
+		_upnp = new Upnp();
 		_upnp.DiscoverIpv6 = useIpv6;
 		
 		var error = _upnp.Discover(2000, 2, "InternetGatewayDevice");
@@ -208,7 +208,7 @@ public partial class Multiplayer : Node
 
 	// Private network methods
 	// Authority (Server)
-	[RPC(MultiplayerAPI.RPCMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
 	private void syncUpdatePlayers(Dictionary<int, Dictionary> newPlayers)
 	{
 		//GD.Print("Players are updated");
@@ -216,7 +216,7 @@ public partial class Multiplayer : Node
 		EmitSignal(nameof(PlayersUpdated), _players);
 	}
 	
-	[RPC(MultiplayerAPI.RPCMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal=true)] // This is a sync method so the caller should execute it aswell
 	private void syncEmitUpdatePlayers()
 	{
 		//GD.Print("Player update signal emitted");
@@ -224,7 +224,7 @@ public partial class Multiplayer : Node
 	}
 
 	// Any peer can call this methods
-	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	private void remoteSendPlayerInfo(int id, Dictionary playerData) 
 	{
 		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
@@ -239,7 +239,7 @@ public partial class Multiplayer : Node
 		Rpc(nameof(syncUpdatePlayers), _players); 
 	}
 
-	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	private void remoteUpdatePlayerCharacter(int id, Godot.Collections.Array newPlayerChar, string newPlayerColour = "ffffff")
 	{
 		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
@@ -254,7 +254,7 @@ public partial class Multiplayer : Node
 		Rpc(nameof(syncUpdatePlayers), _players);
 	}
 
-	[RPC(MultiplayerAPI.RPCMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	private void remoteUpdatePlayers(Dictionary newPlayers)
 	{
 		var multiplayer = (_customMultiplayerAPI != null) ? _customMultiplayerAPI : GetTree().GetMultiplayer();
@@ -303,7 +303,7 @@ public partial class Multiplayer : Node
 	
 	public string GetGameVersionRStripped()
 	{
-		return GAMEVERSION.RStrip(GAMEVERSIONRSTRIP);
+		return GAMEVERSION.ReplaceLineEndings(GAMEVERSIONRSTRIP);
 	}
 
 	public bool IsValidClientVersion()

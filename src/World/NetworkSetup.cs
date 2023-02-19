@@ -9,7 +9,7 @@ public partial class NetworkSetup : Control
 	// Private variables
 	// Multiplayer
 	private Multiplayer _multiplayer;
-	private MultiplayerAPI _multiplayerApi;
+	private MultiplayerApi _multiplayerApi;
 
 	// Nodes
 	private Control _hostJoinControl;
@@ -32,7 +32,7 @@ public partial class NetworkSetup : Control
 		newControl.Show();
 	}
 
-	[RPC(CallLocal=true)]
+	[Rpc(CallLocal=true)]
 	private void gotoWorld()
 	{
 		GetTree().ChangeSceneToFile("res://src/World/TestWorld.tscn");

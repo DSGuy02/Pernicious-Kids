@@ -9,7 +9,7 @@ public partial class Player : CharacterBody3D
 		Public
 	*/
 	// Properties
-	public MultiplayerAPI MultiplayerApi
+	public MultiplayerApi MultiplayerApi
 	{
 		get { return _multiplayerApi; }
 	}
@@ -79,7 +79,7 @@ public partial class Player : CharacterBody3D
 	// [Signal] delegate void MySignalWithArguments(string foo, int bar); // Just for future references
 	
 	// Other variables
-	private MultiplayerAPI _multiplayerApi;
+	private MultiplayerApi _multiplayerApi;
 
 	private bool _captureMouse = false;
 	private bool _crouched = false;
@@ -135,8 +135,8 @@ public partial class Player : CharacterBody3D
 	{
 		Vector3 inputDir = Vector3.Zero;
 		
-		inputDir += Input.GetAxis("forward", "backward") * GlobalTransform.basis.z; // Up and Down Movement
-		inputDir += Input.GetAxis("leftward", "rightward") * GlobalTransform.basis.x; // Left and Right Movement
+		inputDir += Input.GetAxis("forward", "backward") * GlobalTransform.Basis.Z; // Up and Down Movement
+		inputDir += Input.GetAxis("leftward", "rightward") * GlobalTransform.Basis.X; // Left and Right Movement
 
 		inputDir = inputDir.Normalized();
 		
@@ -151,14 +151,14 @@ public partial class Player : CharacterBody3D
 		Vector3 newHeadRotation = Vector3.Zero;
 
 		// Collect the controller input and multiply it with the mouse sensitivity
-		controllerDir.y += Input.GetAxis("camera_left", "camera_right");
-		controllerDir.x += Input.GetAxis("camera_up", "camera_down");
+		controllerDir.Y += Input.GetAxis("camera_left", "camera_right");
+		controllerDir.X += Input.GetAxis("camera_up", "camera_down");
 
 		controllerDir = controllerDir.Normalized(); // Normalise it to make it move faster and equally across 2 axis
 
 		// Set the new rotation, we have to convert it to radians (as Rotation is based on radians) and negate it as it would be flipped, then we multiply it by the controller sensitivity
-		newRotation.y += Mathf.DegToRad(-controllerDir.y * _controllerSensitivity);
-		newHeadRotation.x += Mathf.DegToRad(-controllerDir.x * _controllerSensitivity);
+		newRotation.Y += Mathf.DegToRad(-controllerDir.Y * _controllerSensitivity);
+		newHeadRotation.X += Mathf.DegToRad(-controllerDir.X * _controllerSensitivity);
 
 		// Apply the new values
 		Rotation += newRotation;
@@ -166,7 +166,7 @@ public partial class Player : CharacterBody3D
 
 		// Don't allow the rotation to go upside down
 		var clampHeadRotation = _head.Rotation;
-		clampHeadRotation.x = Mathf.Clamp(clampHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+		clampHeadRotation.X = Mathf.Clamp(clampHeadRotation.X, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 		_head.Rotation = clampHeadRotation;
 	}
 
@@ -176,7 +176,7 @@ public partial class Player : CharacterBody3D
 		bool sprint = Input.IsActionPressed("sprint");
 
 		if (!IsOnFloor()) // Let's have gravity
-			velocity.y -= _gravity * (float)delta;
+			velocity.Y -= _gravity * (float)delta;
 		
 		if (isMaster()) // This is our character
 		{
@@ -211,26 +211,26 @@ public partial class Player : CharacterBody3D
 
 			Vector3 desiredVelocity = getInput() * _speed;
 
-			velocity.x = desiredVelocity.x;
-			velocity.z = desiredVelocity.z;
+			velocity.X = desiredVelocity.X;
+			velocity.Z = desiredVelocity.Z;
 
 			if (Input.IsActionPressed("jump") && IsOnFloor())
-				velocity.y += JUMPVELOCITY;
+				velocity.Y += JUMPVELOCITY;
 		
 		} else { // This is not our character
 
 			var newGlobalTransform = GlobalTransform;
 			var newHeadRotation = _head.Rotation;
 
-			newGlobalTransform.origin = _puppetPosition;
-			newGlobalTransform.basis = new Basis(Vector3.Up, _puppetRotation.y);
+			newGlobalTransform.Origin = _puppetPosition;
+			newGlobalTransform.Basis = new Basis(Vector3.Up, _puppetRotation.Y);
 
 			GlobalTransform = newGlobalTransform.Orthonormalized();
 
-			velocity.x = _puppetVelocity.x;
-			velocity.z = _puppetVelocity.z;
+			velocity.X = _puppetVelocity.X;
+			velocity.Z = _puppetVelocity.Z;
 
-			newHeadRotation.x = _puppetRotation.x;
+			newHeadRotation.X = _puppetRotation.X;
 			
 			_head.Rotation = newHeadRotation;
 
@@ -249,7 +249,7 @@ public partial class Player : CharacterBody3D
 	/*
 		Network Methods
 	*/
-	[RPC(MultiplayerAPI.RPCMode.Authority)]
+	[Rpc(MultiplayerApi.RpcMode.Authority)]
 	private void puppetUpdateState(Vector3 pPosition, Vector3 pVelocity, Vector2 pRotation)
 	{
 		_puppetPosition = pPosition;
@@ -261,7 +261,7 @@ public partial class Player : CharacterBody3D
 			_movementTween.Kill();
 		
 		_movementTween = CreateTween();
-		_movementTween.TweenProperty(this, "global_transform", new Transform3D(GlobalTransform.basis, pPosition), 0.1).SetTrans(Tween.TransitionType.Linear);
+		_movementTween.TweenProperty(this, "global_transform", new Transform3D(GlobalTransform.Basis, pPosition), 0.1).SetTrans(Tween.TransitionType.Linear);
 	}
 
 	/*
@@ -301,7 +301,7 @@ public partial class Player : CharacterBody3D
 	{
 		if (_multiplayerApi.HasMultiplayerPeer())
 			if (IsMultiplayerAuthority())
-				Rpc(nameof(puppetUpdateState), GlobalTransform.origin, Velocity, new Vector2(_head.Rotation.x, Rotation.y));
+				Rpc(nameof(puppetUpdateState), GlobalTransform.Origin, Velocity, new Vector2(_head.Rotation.X, Rotation.Y));
 			else
 				_networkTickRate.Stop();
 		else
@@ -331,12 +331,12 @@ public partial class Player : CharacterBody3D
 			{
 				// Move the camera based on the mouse movement
 				InputEventMouseMotion inputEventMouseMotion = (InputEventMouseMotion) inputEvent;
-				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.x * _mouseSensitivity)); // Rotate along the mouse-X
-				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.y * _mouseSensitivity)); // Rotate along the mouse-Y
+				RotateY(Mathf.DegToRad(-inputEventMouseMotion.Relative.X * _mouseSensitivity)); // Rotate along the mouse-X
+				_head.RotateX(Mathf.DegToRad(-inputEventMouseMotion.Relative.Y * _mouseSensitivity)); // Rotate along the mouse-Y
 
 				// Don't let the camera move beyound a certain point in the X axis
 				var newHeadRotation = _head.Rotation;
-				newHeadRotation.x = Mathf.Clamp(newHeadRotation.x, Mathf.DegToRad(-90), Mathf.DegToRad(90));
+				newHeadRotation.X = Mathf.Clamp(newHeadRotation.X, Mathf.DegToRad(-90), Mathf.DegToRad(90));
 				_head.Rotation = newHeadRotation;
 			
 			} else if (inputEvent is InputEventKey)

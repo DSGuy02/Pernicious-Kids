@@ -86,7 +86,7 @@ public partial class Save : Node
 		
 		string content = fileAccess.GetLine();
 		
-		Variant data = JSON.ParseString(content);
+		Variant data = Json.ParseString(content);
 
 		savedData = (Dictionary<string, Variant>) data;
 
@@ -96,7 +96,7 @@ public partial class Save : Node
 	private void saveGame()
 	{
 		FileAccess saveGameData = FileAccess.Open(SAVEGAMEPATH, FileAccess.ModeFlags.Write);
-		saveGameData.StoreLine(JSON.Stringify(SaveData));
+		saveGameData.StoreLine(Json.Stringify(SaveData));
 	}
 	/*
 		Public methods
