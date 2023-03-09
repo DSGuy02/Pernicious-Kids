@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "build",
-            "command": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-rc1_mono_linux_x86_64",
+            "command": "/home/oladeji/Documents/Games/Godot/v4-mono/Godot_v4.0-stable_mono_linux_x86_64",
             "type": "process",
             "args": [
                 "--build-solutions",
