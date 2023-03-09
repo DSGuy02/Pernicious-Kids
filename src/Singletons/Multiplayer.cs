@@ -459,7 +459,7 @@ public partial class Multiplayer : Node
 			return error;
 		}
 
-		// _customMultiplayerAPI = new MultiplayerAPI(); // The compiler complains that the object doesn't have a constructor....
+		// _customMultiplayerAPI = new MultiplayerApi(); // The compiler complains that the object doesn't have a constructor....
 		//_customMultiplayerAPI.MultiplayerPeer = _server; // ....yet at runtime, it complains that it needs to be instanced....?
 		//GetTree().SetMultiplayer(_customMultiplayerAPI); // Can't do this yet
 
